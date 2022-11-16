@@ -67,6 +67,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "libpcap"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dc988b3bbf4f80e00922bec4fb38631f89b55c06d61f0b5efd947bbbd7151073"
+dependencies = [
+ "libc",
+]
+
+[[package]]
 name = "memchr"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -91,8 +100,16 @@ dependencies = [
 name = "pds-netanalyzer"
 version = "0.1.0"
 dependencies = [
+ "libpcap",
  "pcap",
+ "pdu",
 ]
+
+[[package]]
+name = "pdu"
+version = "1.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3957aaf5fb779dbb9d95ccfd447b45cbdc7e49381f0f8f757614d30a7c32f4ce"
 
 [[package]]
 name = "pkg-config"
