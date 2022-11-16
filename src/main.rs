@@ -1,3 +1,9 @@
+use pcap::Device;
+
 fn main() {
-    println!("Hello, world!");
+
+    for device in Device::list().expect("device lookup failed") {
+        println!("Found device! {:?}", device);
+
+    }
 }
