@@ -153,6 +153,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
+name = "minimal-lexical"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
+
+[[package]]
+name = "nom"
+version = "7.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a8903e5a29a317527874d0402f867152a3d21c908bb0b933e416c65e301d4c36"
+dependencies = [
+ "memchr",
+ "minimal-lexical",
+]
+
+[[package]]
 name = "once_cell"
 version = "1.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -166,9 +182,9 @@ checksum = "9b7820b9daea5457c9f21c69448905d723fbd21136ccf521748f23fd49e723ee"
 
 [[package]]
 name = "pcap"
-version = "0.11.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "98d92d4bf65b3e26dbbadaf90b0ea90f7dd631459db276b3b1fc3efc3c68696a"
+checksum = "d536b12f51fa925b590a6681765ed2bd9f1beb1d2953fa5fe5a20f7c1087b994"
 dependencies = [
  "bitflags",
  "errno",
@@ -185,6 +201,8 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "pcap",
+ "pktparse",
+ "serde",
 ]
 
 [[package]]
@@ -192,6 +210,15 @@ name = "pkg-config"
 version = "0.3.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ac9a59f73473f1b8d852421e59e64809f025994837ef743615c6d0c5b305160"
+
+[[package]]
+name = "pktparse"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a8aeb7ec35e7fdd2ecd56d39d56f843197f243d08cc4d51cf6b37268393d5e1b"
+dependencies = [
+ "nom",
+]
 
 [[package]]
 name = "proc-macro-error"
@@ -264,6 +291,26 @@ dependencies = [
  "libc",
  "linux-raw-sys",
  "windows-sys 0.42.0",
+]
+
+[[package]]
+name = "serde"
+version = "1.0.148"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e53f64bb4ba0191d6d0676e1b141ca55047d83b74f5607e6d8eb88126c52c2dc"
+dependencies = [
+ "serde_derive",
+]
+
+[[package]]
+name = "serde_derive"
+version = "1.0.148"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a55492425aa53521babf6137309e7d34c20bbfbbfcfe2c7f3a047fd1f6b92c0c"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
