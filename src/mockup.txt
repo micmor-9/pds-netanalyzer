@@ -1,0 +1,11 @@
+cargo run 
+Welcome
+
+-l -> list all interfaces
+-i -> choose interfaces
+-f -> set report file name
+-x -> set file type txt
+-c -> set file type csv
+
+[Current configuration]
+all 
