@@ -2,10 +2,13 @@
 name = "pds-netanalyzer"
 version = "0.1.0"
 edition = "2021"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "pds_netanalyzer"
+path = "src/lib/lib.rs"
 
 [dependencies]
-pcap = "0.11.0"
-pdu = "1.1"
-libpcap = "0.1.7"
+pcap = "1.0.0"
+clap = {version = "4.0.27", features = ["derive"]}
