@@ -13,3 +13,5 @@ pcap = "1.0.0"
 clap = { version = "4.0.15", features = ["derive"] }
 pktparse = "0.7.1"
 serde = { version = "1.0.147", features = ["derive"] }
+chrono = "0.4.23"
+dns-parser = "0.8.0"
