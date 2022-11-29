@@ -12,3 +12,4 @@ path = "src/lib/lib.rs"
 [dependencies]
 pcap = "1.0.0"
 clap = {version = "4.0.27", features = ["derive"]}
+colored = "2.0.0"
