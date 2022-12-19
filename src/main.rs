@@ -1,6 +1,6 @@
 use clap::Parser;
 use pcap::Device;
-use pds_netanalyzer::args::Args;
+use netanalyzer::args::Args;
 use std::process;
 use colored::*;
 
