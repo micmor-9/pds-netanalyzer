@@ -1,4 +1,5 @@
-use std::fmt::{Display, Formatter};
+use std::fmt;
+use std::fmt::{Display, Error, Formatter, Result};
 
 #[derive(Debug)]
 pub enum ParserError {
@@ -17,7 +18,7 @@ pub enum ParserError {
 impl std::error::Error for ParserError {}
 
 impl Display for ParserError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result<T, E> {
+    fn fmt(&self, f: &mut Formatter) -> Result {
         match self {
             ParserError::EthernetPacketUnrecognized => write!(f, "[Parser] Packet not recognized!"),
             ParserError::EthernetPacketError => write!(f, "[Parser] Ethernet Packet error!"),
