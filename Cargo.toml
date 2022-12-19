@@ -2,6 +2,7 @@
 name = "pds-netanalyzer"
 version = "0.1.0"
 edition = "2021"
+readme = "README.md"
 
 [lib]
 name = "netanalyzer"
@@ -9,6 +10,7 @@ path = "src/lib/lib.rs"
 
 
 [dependencies]
+colored = "2.0.0"
 pcap = "1.0.0"
 pktparse = "0.7.1"
 chrono = "0.4.23"
