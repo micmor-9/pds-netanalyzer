@@ -43,3 +43,4 @@ fn print_menu (interface_name: String, list_mode: bool, option: bool, interfaces
         println!("{0: <2}  {1: <10}  {2: <10}", "5.", "Set report file type to csv", "\t\t-- -c\n".bold().green());
     }
 }
+

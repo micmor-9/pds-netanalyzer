@@ -1,11 +1,9 @@
-cargo run 
-Welcome
-
--l -> list all interfaces
--i -> choose interfaces
--f -> set report file name
--x -> set file type txt
--c -> set file type csv
-
-[Current configuration]
-all 
+TO DO:
+- Gestione del file di configurazione (txt, csv) -> robsanity
+- Raccolta degli input dell'utente -> robsanity
+- Aggiustare le info utente per far capire come settare il file al primo avvio -> micgal
+- Avviare lo sniffing -> 
+- Gestire i filtri -> 
+- Inizializzazione pcap -> 
+- Gestione dei thread: capture, report, comunicazione tra di loro, gestione di start e pausa dello sniffing, 
+        per il parser -> micmor 
