@@ -8,11 +8,16 @@ pub struct Args {
     #[arg(short, long, default_value = "listview__")]
     pub interface: String,
 
-    // view the interfaces whitout start the sniffing
+    // view the interfaces without start the sniffing
     #[arg(short, long, action)]
     pub list: bool,
 
+    // view all possible commads without start sniffing
     #[arg(short, long, action)]
     pub commands: bool,
+
+    // view all filters
+    #[arg(short, long, action, default_value = "false")]
+    pub filters: bool,
 
 }
