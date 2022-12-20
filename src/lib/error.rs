@@ -1,5 +1,6 @@
-use std::fmt;
-use std::fmt::{Display, Error, Formatter, Result};
+// use std::fmt;
+use std::fmt::{Display, Formatter, Result};
+// use std::fmt::Error;
 
 #[derive(Debug)]
 pub enum ParserError {
