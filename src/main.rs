@@ -3,6 +3,9 @@ use pcap::Device;
 use netanalyzer::args::Args;
 use std::process;
 use colored::*;
+use std::fs::File;
+use std::io::{self, BufRead};
+use std::path::Path;
 
 fn main() {
     let args = Args::parse();
@@ -44,3 +47,56 @@ fn print_menu (interface_name: String, list_mode: bool, option: bool, interfaces
     }
 }
 
+#[derive(Debug)]
+pub struct Settings {
+    pub interface: Option<String>,
+    pub csv: Option<bool>,
+    pub timeout: Option<i64>,
+    pub filename: Option<String>,
+}
+impl Settings {
+    pub fn new() -> Self {
+        if let Ok(lines) = read_lines("./ConfigurationFile") {
+            let mut vec: = vec![];
+            // Consumes the iterator, returns an (Optional) String
+            for line in lines {
+                if let Ok(info) = line {
+                    vec.push(info.to_string());
+                }
+            }
+            let mut tipo ;
+            if vec[1] == "1" {
+                let tipo = true;
+            }
+            else if vec[1] == "0" {
+                let tipo = false;
+            }
+            let timeoutint: i64 = vec[2].parse().unwrap();
+                    return Settings {
+                        interface: vec[0],
+                        csv: tipo,
+                        timeout: timeoutint,
+                        filename:vec[3],
+                        }
+
+
+
+        } else {
+            return Settings {
+                interface: None,
+                csv: None,
+                timeout: None,
+                filename: None,
+            }
+        }
+    }
+}
+
+fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
+    where P: AsRef<Path>, {
+    let file = File::open(filename)?;
+    Ok(io::BufReader::new(file).lines())
+
+}
+// qui bisogna inizializzare e implementare la struct Setiings con None e poi giallare al chiringuito, settando i campi con Some dopo aver letto da file i valori da dare a csv timeout ecc..
+// ci siamo. Maledetto file
