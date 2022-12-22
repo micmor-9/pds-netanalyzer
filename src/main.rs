@@ -3,9 +3,13 @@ use pcap::Device;
 use netanalyzer::args::Args;
 use std::process;
 use colored::*;
-use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
+use std::fs::File;
+use std::io::Write;
+use std::io::prelude;
+
+
 
 fn main() {
     let args = Args::parse();
@@ -16,6 +20,7 @@ fn main() {
     let interfaces = Device::list().unwrap();
 
     print_menu(interface_name, list_mode, option, interfaces);
+    //create_conf_file();
     
 }
 
@@ -47,6 +52,25 @@ fn print_menu (interface_name: String, list_mode: bool, option: bool, interfaces
     }
 }
 
+pub fn create_conf_file() -> std::io::Result<()>{
+    let args = Args::parse();
+    let interfaccia = args.interface;
+    let tempo = args.timeout;
+    let nome = args.filename;
+    let tipo = match args.acsv {
+    true => "1",
+    false => "0"
+    };
+    let mut f = File::create("ConfigurationFile.txt")?;
+    f.write_all(interfaccia.as_bytes())?;
+    f.write_all(&tempo.to_be_bytes())?;
+    f.write_all(nome.as_bytes())?;
+    f.write_all(tipo.as_bytes())?;
+    Ok(()) 
+    
+    //.to_string() + b"{}\n", args.csv +b"{}\n",args.timeout + b"{}\n", args.filename)?;
+}
+
 #[derive(Debug)]
 pub struct Settings {
     pub interface: Option<String>,
@@ -56,27 +80,27 @@ pub struct Settings {
 }
 impl Settings {
     pub fn new() -> Self {
-        if let Ok(lines) = read_lines("./ConfigurationFile") {
-            let mut vec: = vec![];
+        if let Ok(lines) = read_lines("./ConfigurationFile.txt") {
+            let mut vec = vec![];
             // Consumes the iterator, returns an (Optional) String
             for line in lines {
                 if let Ok(info) = line {
                     vec.push(info.to_string());
                 }
             }
-            let mut tipo ;
+            let mut tipo = true;
             if vec[1] == "1" {
-                let tipo = true;
+                tipo = true;
             }
             else if vec[1] == "0" {
-                let tipo = false;
+                tipo = false;
             }
             let timeoutint: i64 = vec[2].parse().unwrap();
                     return Settings {
-                        interface: vec[0],
-                        csv: tipo,
-                        timeout: timeoutint,
-                        filename:vec[3],
+                        interface: Some(vec[0].to_string()),
+                        csv: Some(tipo),
+                        timeout: Some(timeoutint),
+                        filename:Some(vec[3].to_string()),
                         }
 
 
@@ -98,5 +122,6 @@ fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
     Ok(io::BufReader::new(file).lines())
 
 }
-// qui bisogna inizializzare e implementare la struct Setiings con None e poi giallare al chiringuito, settando i campi con Some dopo aver letto da file i valori da dare a csv timeout ecc..
-// ci siamo. Maledetto file
+
+
+
