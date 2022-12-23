@@ -95,7 +95,7 @@ fn arp_packet(interface_name: &str, packet: &[u8]) -> Result<Packet, ParserError
                 packet.len() as u16,
                 "ARP".to_string(),
                 "".to_string(),
-                chrono::offset::Local::now().to_string(),
+                chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
             ))
         }
         Err(_) => Err(ParserError::ArpPacketError),
@@ -164,7 +164,7 @@ fn tcp_packet(
                 packet.len() as u16,
                 "TCP".to_string(),
                 application_protocol,
-                chrono::offset::Local::now().to_string(),
+                chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
             ))
         }
         Err(_) => Err(ParserError::TCPSegmentError),
@@ -193,7 +193,7 @@ fn udp_packet(
                 packet.len() as u16,
                 "TCP".to_string(),
                 application_protocol,
-                chrono::offset::Local::now().to_string(),
+                chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
             ))
         }
         Err(_) => Err(ParserError::UDPDatagramError),
@@ -221,7 +221,7 @@ fn icmp_packet(
                 packet.len() as u16,
                 ["ICMP", icmp_code_parser(header.code)].join(" - "),
                 "".to_string(),
-                chrono::offset::Local::now().to_string(),
+                chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
             ))
         }
         Err(_) => Err(ParserError::ICMPPacketError),
