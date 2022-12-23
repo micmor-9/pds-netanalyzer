@@ -11,7 +11,7 @@ pub enum ParserError {
     TCPSegmentError,
     UDPDatagramError,
     ICMPPacketError,
-    GenericError
+    GenericError,
 }
 
 impl std::error::Error for ParserError {}
@@ -28,7 +28,7 @@ impl Display for ParserError {
             ParserError::TCPSegmentError => write!(f, "TCP Segment error!"),
             ParserError::UDPDatagramError => write!(f, "UDP Datagram error!"),
             ParserError::ICMPPacketError => write!(f, "ICMP Packet error!"),
-            ParserError::GenericError => write!(f, "Generic error!")
+            ParserError::GenericError => write!(f, "Generic error!"),
         }
     }
 }
