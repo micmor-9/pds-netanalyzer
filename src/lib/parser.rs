@@ -1,18 +1,18 @@
-use std::fmt::{Debug, Display, Formatter};
-use std::net::IpAddr;
+use chrono;
 use pcap::Device;
 use pktparse::arp::parse_arp_pkt;
-use pktparse::ethernet::{EtherType, parse_ethernet_frame};
-use chrono;
+use pktparse::ethernet::{parse_ethernet_frame, EtherType};
+use pktparse::icmp::{parse_icmp_header, IcmpCode};
 use pktparse::ip::IPProtocol;
 use pktparse::ipv4::parse_ipv4_header;
 use pktparse::ipv6::parse_ipv6_header;
 use pktparse::tcp::parse_tcp_header;
 use pktparse::udp::parse_udp_header;
-use pktparse::icmp::{IcmpCode, parse_icmp_header};
+use std::fmt::{Debug, Display, Formatter};
+use std::net::IpAddr;
 
-use serde::Serialize;
 use crate::error::ParserError;
+use serde::Serialize;
 
 #[derive(Debug, Serialize)]
 pub struct Packet {
@@ -72,12 +72,10 @@ pub fn ethernet_frame(interface: &Device, ethernet: &[u8]) -> Result<Packet, Par
                 EtherType::IPv4 => ipv4_packet(interface_name, payload),
                 EtherType::IPv6 => ipv6_packet(interface_name, payload),
                 EtherType::ARP => arp_packet(interface_name, payload),
-                _ => Err(
-                    ParserError::EthernetPacketUnrecognized
-                )
+                _ => Err(ParserError::EthernetPacketUnrecognized),
             }
-        },
-        Err(_) => Err(ParserError::EthernetPacketError)
+        }
+        Err(_) => Err(ParserError::EthernetPacketError),
     }
 }
 
@@ -97,10 +95,10 @@ fn arp_packet(interface_name: &str, packet: &[u8]) -> Result<Packet, ParserError
                 packet.len() as u16,
                 "ARP".to_string(),
                 "".to_string(),
-                chrono::offset::Local::now().to_string()
+                chrono::offset::Local::now().to_string(),
             ))
-        },
-        Err(_) => Err(ParserError::ArpPacketError)
+        }
+        Err(_) => Err(ParserError::ArpPacketError),
     }
 }
 
@@ -117,10 +115,10 @@ fn ipv6_packet(interface_name: &str, packet: &[u8]) -> Result<Packet, ParserErro
                 header.next_header,
                 payload,
                 IpAddr::V6(header.source_addr),
-                IpAddr::V6(header.dest_addr)
+                IpAddr::V6(header.dest_addr),
             )
-        },
-        Err(_) => Err(ParserError::IPv6PacketError)
+        }
+        Err(_) => Err(ParserError::IPv6PacketError),
     }
 }
 
@@ -137,14 +135,19 @@ fn ipv4_packet(interface_name: &str, packet: &[u8]) -> Result<Packet, ParserErro
                 header.protocol,
                 payload,
                 IpAddr::V4(header.source_addr),
-                IpAddr::V4(header.dest_addr)
+                IpAddr::V4(header.dest_addr),
             )
-        },
-        Err(_) => Err(ParserError::IPv4PacketError)
+        }
+        Err(_) => Err(ParserError::IPv4PacketError),
     }
 }
 
-fn tcp_packet(interface_name: &str, source_addr: IpAddr, dest_addr: IpAddr, packet: &[u8]) -> Result<Packet, ParserError> {
+fn tcp_packet(
+    interface_name: &str,
+    source_addr: IpAddr,
+    dest_addr: IpAddr,
+    packet: &[u8],
+) -> Result<Packet, ParserError> {
     let parsed_tcp_header = parse_tcp_header(packet);
 
     match parsed_tcp_header {
@@ -161,14 +164,19 @@ fn tcp_packet(interface_name: &str, source_addr: IpAddr, dest_addr: IpAddr, pack
                 packet.len() as u16,
                 "TCP".to_string(),
                 application_protocol,
-                chrono::offset::Local::now().to_string()
+                chrono::offset::Local::now().to_string(),
             ))
-        },
-        Err(_) => Err(ParserError::TCPSegmentError)
+        }
+        Err(_) => Err(ParserError::TCPSegmentError),
     }
 }
 
-fn udp_packet(interface_name: &str, source_addr: IpAddr, dest_addr: IpAddr, packet: &[u8]) -> Result<Packet, ParserError> {
+fn udp_packet(
+    interface_name: &str,
+    source_addr: IpAddr,
+    dest_addr: IpAddr,
+    packet: &[u8],
+) -> Result<Packet, ParserError> {
     let parsed_udp_header = parse_udp_header(packet);
 
     match parsed_udp_header {
@@ -185,14 +193,19 @@ fn udp_packet(interface_name: &str, source_addr: IpAddr, dest_addr: IpAddr, pack
                 packet.len() as u16,
                 "TCP".to_string(),
                 application_protocol,
-                chrono::offset::Local::now().to_string()
+                chrono::offset::Local::now().to_string(),
             ))
         }
-        Err(_) => Err(ParserError::UDPDatagramError)
+        Err(_) => Err(ParserError::UDPDatagramError),
     }
 }
 
-fn icmp_packet(interface_name: &str, source_addr: IpAddr, dest_addr: IpAddr, packet: &[u8]) -> Result<Packet, ParserError> {
+fn icmp_packet(
+    interface_name: &str,
+    source_addr: IpAddr,
+    dest_addr: IpAddr,
+    packet: &[u8],
+) -> Result<Packet, ParserError> {
     let parsed_icmp_header = parse_icmp_header(packet);
 
     match parsed_icmp_header {
@@ -208,14 +221,19 @@ fn icmp_packet(interface_name: &str, source_addr: IpAddr, dest_addr: IpAddr, pac
                 packet.len() as u16,
                 ["ICMP", icmp_code_parser(header.code)].join(" - "),
                 "".to_string(),
-                chrono::offset::Local::now().to_string()
+                chrono::offset::Local::now().to_string(),
             ))
         }
-        Err(_) => Err(ParserError::ICMPPacketError)
+        Err(_) => Err(ParserError::ICMPPacketError),
     }
 }
 
-fn generic_t_packet(interface_name: &str, source_addr: IpAddr, dest_addr: IpAddr, packet: &[u8]) -> Result<Packet, ParserError> {
+fn generic_t_packet(
+    interface_name: &str,
+    source_addr: IpAddr,
+    dest_addr: IpAddr,
+    packet: &[u8],
+) -> Result<Packet, ParserError> {
     Ok(Packet::new(
         interface_name.to_string(),
         source_addr,
@@ -225,28 +243,24 @@ fn generic_t_packet(interface_name: &str, source_addr: IpAddr, dest_addr: IpAddr
         packet.len() as u16,
         "unknown".to_string(),
         "unknown".to_string(),
-        chrono::offset::Local::now().to_string()
+        chrono::offset::Local::now().to_string(),
     ))
 }
 
 // Function to parse the packet with the correct transport layer
-fn transport_protocol_parser(interface_name: &str, t_protocol: IPProtocol, payload: &[u8], source_addr: IpAddr, dest_addr: IpAddr) -> Result<Packet, ParserError> {
+fn transport_protocol_parser(
+    interface_name: &str,
+    t_protocol: IPProtocol,
+    payload: &[u8],
+    source_addr: IpAddr,
+    dest_addr: IpAddr,
+) -> Result<Packet, ParserError> {
     match t_protocol {
-        IPProtocol::TCP => {
-            tcp_packet(interface_name, source_addr, dest_addr, payload)
-        },
-        IPProtocol::UDP => {
-            udp_packet(interface_name, source_addr, dest_addr, payload)
-        },
-        IPProtocol::ICMP => {
-            icmp_packet(interface_name, source_addr, dest_addr, payload)
-        },
-        IPProtocol::Other(..) => {
-            generic_t_packet(interface_name, source_addr, dest_addr, payload)
-        }
-        _ => Err(
-            ParserError::TransportProtocolError
-        )
+        IPProtocol::TCP => tcp_packet(interface_name, source_addr, dest_addr, payload),
+        IPProtocol::UDP => udp_packet(interface_name, source_addr, dest_addr, payload),
+        IPProtocol::ICMP => icmp_packet(interface_name, source_addr, dest_addr, payload),
+        IPProtocol::Other(..) => generic_t_packet(interface_name, source_addr, dest_addr, payload),
+        _ => Err(ParserError::TransportProtocolError),
     }
 }
 
@@ -273,8 +287,9 @@ fn application_protocol_parser(port: &u16) -> String {
         853 => "DNSoverTLS",
         993 => "IMAP4overTLS",
         995 => "POP3overTLS",
-        _ => "unknown"
-    }.to_string()
+        _ => "unknown",
+    }
+    .to_string()
 }
 
 fn icmp_code_parser<'a>(code: IcmpCode) -> &'a str {
@@ -293,6 +308,6 @@ fn icmp_code_parser<'a>(code: IcmpCode) -> &'a str {
         IcmpCode::TimestampReply => "Timestamp Reply",
         IcmpCode::ExtendedEchoRequest => "Extended Echo Request",
         IcmpCode::ExtendedEchoReply(_some) => "Extended Echo Reply",
-        IcmpCode::Other(_some) => "Unknown"
+        IcmpCode::Other(_some) => "Unknown",
     }
 }
