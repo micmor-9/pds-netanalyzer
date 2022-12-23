@@ -10,17 +10,26 @@ use std::io::Write;
 use std::io::prelude;
 
 
-
 fn main() {
     let args = Args::parse();
     let interface_name = args.interface;
+    let a  = &interface_name;
     let list_mode = args.list;
     let option = args.commands;
-
+    let tipo = args.acsv;
+    let timeout = args.timeout;
+    let filen = args.filename;
     let interfaces = Device::list().unwrap();
-
+    
+    let s = Settings {
+        interface: Some(a.to_string()),
+        csv: Some(tipo),
+        timeout: Some(timeout),
+        filename: Some(filen)
+    };
+    println!("{:?}", s.new());
     print_menu(interface_name, list_mode, option, interfaces);
-    //create_conf_file();
+    create_conf_file();
     
 }
 
@@ -54,16 +63,16 @@ fn print_menu (interface_name: String, list_mode: bool, option: bool, interfaces
 
 pub fn create_conf_file() -> std::io::Result<()>{
     let args = Args::parse();
-    let interfaccia = args.interface;
-    let tempo = args.timeout;
-    let nome = args.filename;
+    let interfaccia = format!("{}\n",args.interface);
+    let tempo = format!("{}\n",args.timeout);
+    let nome = format!("{}\n",args.filename);
     let tipo = match args.acsv {
     true => "1",
     false => "0"
     };
     let mut f = File::create("ConfigurationFile.txt")?;
     f.write_all(interfaccia.as_bytes())?;
-    f.write_all(&tempo.to_be_bytes())?;
+    f.write_all(tempo.as_bytes())?;
     f.write_all(nome.as_bytes())?;
     f.write_all(tipo.as_bytes())?;
     Ok(()) 
@@ -79,7 +88,7 @@ pub struct Settings {
     pub filename: Option<String>,
 }
 impl Settings {
-    pub fn new() -> Self {
+    pub fn new(self) -> Self {
         if let Ok(lines) = read_lines("./ConfigurationFile.txt") {
             let mut vec = vec![];
             // Consumes the iterator, returns an (Optional) String
@@ -102,7 +111,8 @@ impl Settings {
                         timeout: Some(timeoutint),
                         filename:Some(vec[3].to_string()),
                         }
-
+                        
+                        
 
 
         } else {
@@ -113,6 +123,8 @@ impl Settings {
                 filename: None,
             }
         }
+        
+
     }
 }
 
