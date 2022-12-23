@@ -3,7 +3,6 @@ use std::io;
 use crate::args::Args;
 use clap::Parser;
 use pcap::Device;
-use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::process;
 
 use colored::{ColoredString, Colorize};
@@ -74,7 +73,7 @@ pub fn print_filters() -> () {
     let mut transport_protocol: Vec<String> = Vec::new();
 
     // match sulla scelta del filtro
-    if filters == true {
+    if filters {
         loop {
             filter_list();
             let mut buffer = String::new();
@@ -82,9 +81,15 @@ pub fn print_filters() -> () {
             io::stdin().read_line(&mut buffer).expect(&err_msg);
             match buffer.as_str().trim() {
                 "1" => {
-                    ip_source.push(filter_ip_source());
+                    println!("{}", "\nFilter by source IP".bold());
+                    ip_source.push(filter_ip());
+                    buffer.clear();
                 }
-                "2" => {}
+                "2" => {
+                    println!("{}", "\nFilter by destination IP".bold());
+                    ip_destination.push(filter_ip());
+                    buffer.clear();
+                }
                 "3" => {}
                 "4" => {}
                 "5" => {}
@@ -97,81 +102,82 @@ pub fn print_filters() -> () {
     }
 }
 
-pub fn filter_ip_source() -> String {
+pub fn filter_ip() -> String {
     let err_msg = "Failed to read line".red();
     let mut ip = String::new();
     loop {
-        println!("Insert source IP: ");
+        println!("\nInsert IP: ");
         ip.clear();
         io::stdin().read_line(&mut ip).expect(&err_msg);
-        // let ip2 = Ipv4Addr::new();
-        check_ip_validity(&ip);
-
-        println!("{}", "Check over".red());
+        if check_validity_ip(&ip) {
+            break;
+        }
     }
+    return "src host".to_owned() + &ip.trim().to_string();
 }
 
-pub fn check_ip_validity(ip: &String) -> bool {
-    let mut check = false;
-    let ip_splitted: Vec<&str> = ip.trim().split(".").collect();
+pub fn check_validity_ip(ip: &String) -> bool {
+    let splitted_ip: Vec<&str> = ip.trim().split(".").collect();
 
-    println!("IP LEN: {}", ip_splitted.len());
-
-    // check the ipv4 validity
-    if ip_splitted.len() == 4 {}
-
-    match ip_splitted.len() {
+    // check ipv4 or ipv6
+    match splitted_ip.len() {
+        // 4 => check = check_validity_ipv4(&splitted_ip),
         4 => {
-            let localhost_v4 = IpAddr::V4(Ipv4Addr::new(
-                ip_splitted[0].parse::<u8>().unwrap(),
-                ip_splitted[1].parse::<u8>().unwrap(),
-                ip_splitted[2].parse::<u8>().unwrap(),
-                ip_splitted[3].parse::<u8>().unwrap(),
-            ));
-            if localhost_v4.is_ipv4() {
-                println!("{}", "The inserted ip is a valid ipv4 address".green());
+            if check_validity_ipv4(&splitted_ip) {
+                println!("{}", "The ipv4 address inserted is valid".green());
                 return true;
             } else {
-                eprintln!("{}", "The inserted ip in not valid");
+                println!("{}", "The ipv4 address inserted is invalid".red());
+                return false;
             }
         }
         8 => {
-            let localhost_v6 = IpAddr::V6(Ipv6Addr::new(
-                ip_splitted[0].parse::<u16>().unwrap(),
-                ip_splitted[1].parse::<u16>().unwrap(),
-                ip_splitted[2].parse::<u16>().unwrap(),
-                ip_splitted[3].parse::<u16>().unwrap(),
-                ip_splitted[4].parse::<u16>().unwrap(),
-                ip_splitted[5].parse::<u16>().unwrap(),
-                ip_splitted[6].parse::<u16>().unwrap(),
-                ip_splitted[7].parse::<u16>().unwrap(),
-            ));
-            if localhost_v6.is_ipv6() {
-                println!("{}", "The inserted ip is a valid ipv6 address".green());
+            if check_validity_ipv6(&splitted_ip) {
+                println!("{}", "The ipv6 address inserted is valid".green());
                 return true;
             } else {
-                println!("porcodio");
+                println!("{}", "The ipv6 address inserted is invalid".red());
+                return false;
             }
-        
-            
         }
         _ => {
-            println!("Invalid IP");
+            println!("Ip not valid");
+            return false;
         }
     }
+}
 
-    // let localhost_v4 = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
-    // let localhost_v6 = IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1));
-
-    // assert_eq!("127.0.0.1".parse(), Ok(localhost_v4));
-    // assert_eq!("::1".parse(), Ok(localhost_v6));
-
-    // assert_eq!(localhost_v4.is_ipv6(), false);
-    // assert_eq!(localhost_v4.is_ipv4(), true);
-
+pub fn check_validity_ipv4(splitted_ip: &Vec<&str>) -> bool {
+    let mut check = true;
+    for elem in splitted_ip {
+        let number = elem.parse::<i32>();
+        if number.is_ok() {
+            if number.as_ref().unwrap() > &255 || number.unwrap() < 0 {
+                check = false;
+            }
+        } else {
+            check = true;
+        }
+    }
     return check;
 }
 
+pub fn check_validity_ipv6(splitted_ip: &Vec<&str>) -> bool {
+    let mut check = true;
+
+    for elem in splitted_ip {
+        let number = elem.parse::<i32>();
+        if number.is_ok() {
+            if number.as_ref().unwrap() > &65535 || number.unwrap() < 0 {
+                check = false;
+            }
+        } else {
+            check = true;
+        }
+    }
+
+    return check;
+}
 pub fn print_menu(
     interface_name: String,
     list_mode: bool,
