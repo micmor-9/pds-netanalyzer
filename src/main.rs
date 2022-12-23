@@ -1,7 +1,10 @@
 use clap::Parser;
-use pcap::Device;
+use pcap::{Device, Capture};
+use netanalyzer::parser;
 use netanalyzer::args::Args;
 use std::process;
+use std::thread;
+use std::sync::mpsc::channel;
 use colored::*;
 
 fn main() {
@@ -12,8 +15,57 @@ fn main() {
 
     let interfaces = Device::list().unwrap();
 
+    // Select first interface available temporarly to start sniffing
+    let interface = interfaces.first().unwrap().clone();
+    let interface_bis = interface.clone();
+
     print_menu(interface_name, list_mode, option, interfaces);
-    
+
+    //Set up pcap capture in promisc mode
+    let mut capture = 
+        Capture::from_device(interface)
+        .unwrap() //get Ok() from result
+        .promisc(true) // set promiscous mode on
+        .immediate_mode(true) // set immediate mode to not buffer packets
+        .open() // pass from inactive to active
+        .unwrap(); // get Ok() from result
+
+    let (tx_snif_pars, rx_snif_pars) = channel::<Vec<u8>>();
+    let (tx_pars_report, rx_pars_report) = channel::<parser::Packet>();
+
+    // Thread for sniffing the packets on the network via pcap
+    let sniffing_thread = thread::spawn(move || {
+        // TODO implement filters 
+        while let Ok(packet) = capture.next_packet() { 
+            let packet_to_send = packet.clone();
+            tx_snif_pars.send(packet_to_send.to_vec()).unwrap();
+        }
+    });
+
+    // Thread that receives a Vec<u8> from sniffing_thread and attempts to parse via the parser module of the lib
+    let parsing_thread = thread::spawn(move || {
+        while let Ok(packet) = rx_snif_pars.recv() {
+            let parsed_packet = parser::ethernet_frame(&interface_bis, &packet);
+            match parsed_packet {
+                Ok(res) => {
+                    println!("{}", res);
+                    tx_pars_report.send(res).unwrap();
+                },
+                Err(err) => println!("{0} {1}", "Error:".bold().yellow(), err.to_string().bold().yellow())
+            }
+        }
+    });
+
+    let report_thread = thread::spawn(move || {
+        while let Ok(_packet) = rx_pars_report.recv() {
+            // TODO add packet to report queue
+        }
+    });
+
+    //Join the threads
+    sniffing_thread.join().unwrap();
+    parsing_thread.join().unwrap();
+    report_thread.join().unwrap();
 }
 
 fn print_menu (interface_name: String, list_mode: bool, option: bool, interfaces: Vec<Device>) {
@@ -43,4 +95,5 @@ fn print_menu (interface_name: String, list_mode: bool, option: bool, interfaces
         println!("{0: <2}  {1: <10}  {2: <10}", "5.", "Set report file type to csv", "\t\t-- -c\n".bold().green());
     }
 }
+
 
