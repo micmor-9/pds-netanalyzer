@@ -26,14 +26,14 @@ fn main() {
     let interface = interfaces.first().unwrap().clone();
     let interface_bis = interface.clone();
 
-    let s = Settings {
+    /*let s = Settings {
         interface: Some(a.to_string()),
         csv: Some(tipo),
         timeout: Some(timeout),
         filename: Some(filen),
     };
-    println!("{:?}", s.new());
-    print_menu(interface_name, list_mode, option, interfaces);
+    println!("{:?}", s.new());*/
+    //print_menu(interface_name, list_mode, option, interfaces);
 
     //Set up pcap capture in promisc mode
     let mut capture = Capture::from_device(interface)
@@ -79,7 +79,7 @@ fn main() {
         }
     });
 
-    let conf_file = create_conf_file();
+    /*let conf_file = create_conf_file();
     match conf_file {
         Ok(_) => println!("Configuration file created successfully!"),
         Err(err) => println!(
@@ -87,7 +87,7 @@ fn main() {
             "Error in configuration file creation".bold().red(),
             err.to_string().bold().red()
         ),
-    }
+    }*/
 
     //Join the threads
     sniffing_thread.join().unwrap();
