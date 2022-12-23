@@ -5,7 +5,7 @@ use clap::Parser;
 use pcap::Device;
 use std::process;
 
-use colored::{ColoredString, Colorize};
+use colored::Colorize;
 
 #[derive(Debug)]
 pub struct Settings {
@@ -82,17 +82,33 @@ pub fn print_filters() -> () {
             match buffer.as_str().trim() {
                 "1" => {
                     println!("{}", "\nFilter by source IP".bold());
-                    ip_source.push(filter_ip());
+                    ip_source.push(filter_ip(1));
                     buffer.clear();
                 }
                 "2" => {
                     println!("{}", "\nFilter by destination IP".bold());
-                    ip_destination.push(filter_ip());
+                    ip_destination.push(filter_ip(2));
                     buffer.clear();
                 }
-                "3" => {}
-                "4" => {}
-                "5" => {}
+                "3" => {
+                    println!("{}", "\nFilter by source port".bold());
+                    source_port.push(filter_port(1));
+                }
+                "4" => {
+                    println!("{}", "\nFilter by destination port".bold());
+                    destination_port.push(filter_port(1));
+                }
+                "5" => {
+                    println!("{}", "\nFilter by transport protocol".bold());
+                    // TODO: to continue the check for the protocol
+                    // 
+                    // 
+                    // transport_protocol.push();
+                    // 
+                    // 
+                    //
+
+                }
                 "0" => {}
                 _ => {
                     println!("\n{}", "Wrong command.".red());
@@ -102,7 +118,40 @@ pub fn print_filters() -> () {
     }
 }
 
-pub fn filter_ip() -> String {
+pub fn filter_port(mode: u8) -> String {
+    let mut port_number = String::new();
+    let err_msg = "Failed to read line".red();
+
+    loop {
+        println!("Inser port number");
+        port_number.clear();
+        io::stdin().read_line(&mut port_number).expect(&err_msg);
+        if check_port_number(&port_number) {
+            println!("{}", "Wrong port number\n".red());
+        } else {
+            break;
+        }
+    }
+
+    // difference between source port or destination port
+    match mode {
+        1 => return "src port".to_owned() + &port_number.trim().to_string(),
+        2 => return "dst port".to_owned() + &port_number.trim().to_string(),
+        _=> return "error".to_owned(),
+    }
+}
+
+pub fn check_port_number(port_number: &String) -> bool {
+    let number = port_number.trim().parse::<i32>();
+    if number.is_ok() {
+        if number.as_ref().unwrap() > &0 && number.unwrap() < 65535 {
+            return false;
+        }
+    }
+    return true;
+}
+
+pub fn filter_ip(mode: u8) -> String {
     let err_msg = "Failed to read line".red();
     let mut ip = String::new();
     loop {
@@ -113,7 +162,13 @@ pub fn filter_ip() -> String {
             break;
         }
     }
-    return "src host".to_owned() + &ip.trim().to_string();
+    
+    // difference between source ip and destination ip
+    match mode {
+        1 => return "src host".to_owned() + &ip.trim().to_string(),
+        2 => return "dst host".to_owned() + &ip.trim().to_string(),
+        _ => return "error".to_owned(),
+    }
 }
 
 pub fn check_validity_ip(ip: &String) -> bool {
