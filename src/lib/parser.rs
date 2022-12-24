@@ -56,7 +56,7 @@ impl Packet {
 impl Display for Packet {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         //| Interface \t| Source IP Address \t| Destination IP Address \t| Source Port \t| Dest. Port \t| Length \t| Transp. Protocol \t| Application Protocol \t| Timestamp \t|
-        write!(f, "| {0:<5} \t| {1:<15} \t| {2:<15} \t| {3:<5} \t| {4:<5} \t| {5:<5} \t| {6:<8} \t| {7:<8} \t| {8} \t|", self.interface, self.src_address, self.dest_address, self.src_port.unwrap_or(0), self.dest_port.unwrap_or(0), self.length, self.transport, self.application, self.timestamp)
+        write!(f, "| {0:<5} | {1:<25} | {2:<25} | {3:<5} \t| {4:<5} \t| {5:<4} \t| {6:<25} | {7:<25} | {8} \t|", self.interface, self.src_address, self.dest_address, self.src_port.unwrap_or(0), self.dest_port.unwrap_or(0), self.length, self.transport, self.application, self.timestamp)
     }
 }
 
@@ -95,7 +95,9 @@ fn arp_packet(interface_name: &str, packet: &[u8]) -> Result<Packet, ParserError
                 packet.len() as u16,
                 "ARP".to_string(),
                 "".to_string(),
-                chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+                chrono::offset::Local::now()
+                    .format("%Y-%m-%d %H:%M:%S")
+                    .to_string(),
             ))
         }
         Err(_) => Err(ParserError::ArpPacketError),
@@ -164,7 +166,9 @@ fn tcp_packet(
                 packet.len() as u16,
                 "TCP".to_string(),
                 application_protocol,
-                chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+                chrono::offset::Local::now()
+                    .format("%Y-%m-%d %H:%M:%S")
+                    .to_string(),
             ))
         }
         Err(_) => Err(ParserError::TCPSegmentError),
@@ -191,9 +195,11 @@ fn udp_packet(
                 Some(header.source_port),
                 Some(header.dest_port),
                 packet.len() as u16,
-                "TCP".to_string(),
+                "UDP".to_string(),
                 application_protocol,
-                chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+                chrono::offset::Local::now()
+                    .format("%Y-%m-%d %H:%M:%S")
+                    .to_string(),
             ))
         }
         Err(_) => Err(ParserError::UDPDatagramError),
@@ -221,7 +227,9 @@ fn icmp_packet(
                 packet.len() as u16,
                 ["ICMP", icmp_code_parser(header.code)].join(" - "),
                 "".to_string(),
-                chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+                chrono::offset::Local::now()
+                    .format("%Y-%m-%d %H:%M:%S")
+                    .to_string(),
             ))
         }
         Err(_) => Err(ParserError::ICMPPacketError),

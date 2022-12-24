@@ -1,10 +1,13 @@
 use clap::Parser;
 use colored::*;
+use netanalyzer::error::ParserError;
 use pcap::{Capture, Device};
 use std::fs::File;
+use std::io;
 use std::io::Write;
 use std::process;
 use std::sync::mpsc::channel;
+use std::sync::{Arc, RwLock};
 use std::thread;
 
 use netanalyzer::args::Args;
@@ -43,39 +46,95 @@ fn main() {
         .open() // pass from inactive to active
         .unwrap(); // get Ok() from result
 
+    println!(
+        "{}",
+        "Press ENTER to pause/resume the sniffing.".bold().cyan()
+    );
+    println!("{}", "Press q and ENTER to stop the sniffing".bold().blue());
+
     let (tx_snif_pars, rx_snif_pars) = channel::<Vec<u8>>();
     let (tx_pars_report, rx_pars_report) = channel::<parser::Packet>();
 
+    let rwlock = Arc::new(RwLock::new(false));
+    let pause_handler = Arc::clone(&rwlock);
+    let pause_handler_snif = Arc::clone(&rwlock);
+    let pause_handler_parse = Arc::clone(&rwlock);
+    let pause_handler_rep = Arc::clone(&rwlock);
+
     // Thread for sniffing the packets on the network via pcap
     let sniffing_thread = thread::spawn(move || {
-        // TODO implement filters
+        let lock = &*pause_handler_snif;
+        // TODO: implement filters
         while let Ok(packet) = capture.next_packet() {
-            let packet_to_send = packet.clone();
-            tx_snif_pars.send(packet_to_send.to_vec()).unwrap();
+            let pause = lock.read().unwrap();
+            if (!*pause) {
+                let packet_to_send = packet.clone();
+                tx_snif_pars.send(packet_to_send.to_vec()).unwrap();
+            }
+            drop(pause);
         }
     });
 
     // Thread that receives a Vec<u8> from sniffing_thread and attempts to parse via the parser module of the lib
     let parsing_thread = thread::spawn(move || {
+        let lock = &*pause_handler_parse;
         while let Ok(packet) = rx_snif_pars.recv() {
             let parsed_packet = parser::ethernet_frame(&interface_bis, &packet);
-            match parsed_packet {
-                Ok(res) => {
-                    println!("{}", res);
-                    tx_pars_report.send(res).unwrap();
+            let pause = lock.read().unwrap();
+            if (!*pause) {
+                match parsed_packet {
+                    Ok(res) => {
+                        println!("{}", res);
+                        tx_pars_report.send(res).unwrap();
+                    }
+                    Err(err) => match err {
+                        ParserError::EthernetPacketUnrecognized => {}
+                        _ => println!(
+                            "{0} {1}",
+                            "Error:".bold().yellow(),
+                            err.to_string().bold().yellow()
+                        ),
+                    },
                 }
-                Err(err) => println!(
-                    "{0} {1}",
-                    "Error:".bold().yellow(),
-                    err.to_string().bold().yellow()
-                ),
+            }
+            drop(pause);
+        }
+    });
+
+    // Thread used to pause/resume
+    let pause_resume_thread = thread::spawn(move || {
+        let lock = &*pause_handler;
+        let mut buffer = String::new();
+        loop {
+            buffer.clear();
+            io::stdin()
+                .read_line(&mut buffer)
+                .expect("Failed to read line");
+            match buffer.as_str().trim() {
+                "" => {
+                    let mut pause = lock.write().unwrap();
+                    if *pause == true {
+                        *pause = false;
+                        println!("{}", "Sniffing resumed!".bold().green());
+                    } else {
+                        *pause = true;
+                        println!("{}", "Sniffing paused!".bold().green());
+                    }
+                    io::stdout().flush().unwrap();
+                    drop(pause);
+                }
+                "q" | "Q" => {
+                    // TODO: implement the stop of all threads and the safe exit from the program
+                }
+                _ => {}
             }
         }
     });
 
     let report_thread = thread::spawn(move || {
+        let lock = &*pause_handler_rep;
         while let Ok(_packet) = rx_pars_report.recv() {
-            // TODO add packet to report queue
+            // TODO: add packet to report queue
         }
     });
 
@@ -93,6 +152,7 @@ fn main() {
     sniffing_thread.join().unwrap();
     parsing_thread.join().unwrap();
     report_thread.join().unwrap();
+    pause_resume_thread.join().unwrap();
 }
 
 fn print_menu(interface_name: String, list_mode: bool, option: bool, interfaces: Vec<Device>) {
