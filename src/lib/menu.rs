@@ -27,19 +27,34 @@ impl Settings {
 
 pub struct Filter {
     pub ip_source: String,
-    pub ip_dest: String,
-    pub port_source: String,
-    pub port_dest: String,
+    pub ip_destination: String,
+    pub source_port: String,
+    pub destination_port: String,
     pub transport_protocol: String,
 }
 impl Filter {
     pub fn new() -> Self {
         return Filter {
             ip_source: String::new(),
-            ip_dest: String::new(),
-            port_source: String::new(),
-            port_dest: String::new(),
+            ip_destination: String::new(),
+            source_port: String::new(),
+            destination_port: String::new(),
             transport_protocol: String::new(),
+        };
+    }
+    pub fn with_args(
+        ip_source: String,
+        ip_destination: String,
+        source_port: String,
+        destination_port: String,
+        transport_protocol: String,
+    ) -> Self {
+        return Filter {
+            ip_source,
+            ip_destination,
+            source_port,
+            destination_port,
+            transport_protocol,
         };
     }
 }
@@ -56,7 +71,7 @@ pub fn filter_list() -> () {
 }
 
 // pub fn menu() -> Settings {}
-pub fn print_filters() -> () {
+pub fn print_filters() -> Filter {
     let args = Args::parse();
     // let mut conditional_settings = Vec::<String>::new();
 
@@ -93,29 +108,78 @@ pub fn print_filters() -> () {
                 "3" => {
                     println!("{}", "\nFilter by source port".bold());
                     source_port.push(filter_port(1));
+                    buffer.clear();
                 }
                 "4" => {
                     println!("{}", "\nFilter by destination port".bold());
-                    destination_port.push(filter_port(1));
+                    destination_port.push(filter_port(2));
+                    buffer.clear();
                 }
                 "5" => {
                     println!("{}", "\nFilter by transport protocol".bold());
-                    // TODO: to continue the check for the protocol
-                    // 
-                    // 
-                    // transport_protocol.push();
-                    // 
-                    // 
-                    //
-
+                    transport_protocol.push(filter_transport_protocol());
+                    buffer.clear();
                 }
-                "0" => {}
+                "0" => {
+                    let ip_source_ret = ip_source.join(" or ");
+                    let ip_destination_ret = ip_destination.join(" or ");
+                    let source_port_ret = source_port.join(" or ");
+                    let destination_port_ret = destination_port.join(" or ");
+                    let transport_protocol_ret = transport_protocol.join(" or ");
+
+                    return Filter::with_args(
+                        ip_source_ret,
+                        ip_destination_ret,
+                        source_port_ret,
+                        destination_port_ret,
+                        transport_protocol_ret,
+                    );
+                }
                 _ => {
                     println!("\n{}", "Wrong command.".red());
                 }
             }
         }
     }
+    return Filter::new();
+}
+
+pub fn filter_transport_protocol() -> String {
+    let mut transport_protocol = String::new();
+    let err_msg = "Failed to read line".red();
+    loop {
+        println!("Insert transport protocol");
+        transport_protocol.clear();
+        io::stdin()
+            .read_line(&mut transport_protocol)
+            .expect(&err_msg);
+        if transport_protocol_validity(&transport_protocol) {
+            transport_protocol = "\\".to_owned() + &transport_protocol;
+            break;
+        } else {
+            println!("{}", "Invalid transport protocol".red());
+            println!("The options are: icmp, icmp6, igmp, igrp, pim, ah, esp, vrrp, udp, tcp");
+        }
+    }
+
+    return "ip proto ".to_owned() + &transport_protocol.trim().to_string();
+}
+
+pub fn transport_protocol_validity(transport_protocol: &String) -> bool {
+    let possible_protocol = vec![
+        String::from("icmp\n"),
+        String::from("icmp6\n"),
+        String::from("igmp\n"),
+        String::from("igrp\n"),
+        String::from("pim\n"),
+        String::from("ah\n"),
+        String::from("esp\n"),
+        String::from("vrrp\n"),
+        String::from("udp\n"),
+        String::from("tcp\n"),
+    ];
+
+    return possible_protocol.contains(transport_protocol);
 }
 
 pub fn filter_port(mode: u8) -> String {
@@ -129,15 +193,16 @@ pub fn filter_port(mode: u8) -> String {
         if check_port_number(&port_number) {
             println!("{}", "Wrong port number\n".red());
         } else {
+            println!("{}", "The port number inserted is valid".green());
             break;
         }
     }
 
     // difference between source port or destination port
     match mode {
-        1 => return "src port".to_owned() + &port_number.trim().to_string(),
-        2 => return "dst port".to_owned() + &port_number.trim().to_string(),
-        _=> return "error".to_owned(),
+        1 => return "src port ".to_owned() + &port_number.trim().to_string(),
+        2 => return "dst port ".to_owned() + &port_number.trim().to_string(),
+        _ => return "error".to_owned(),
     }
 }
 
@@ -162,11 +227,11 @@ pub fn filter_ip(mode: u8) -> String {
             break;
         }
     }
-    
+
     // difference between source ip and destination ip
     match mode {
-        1 => return "src host".to_owned() + &ip.trim().to_string(),
-        2 => return "dst host".to_owned() + &ip.trim().to_string(),
+        1 => return "src host ".to_owned() + &ip.trim().to_string(),
+        2 => return "dst host ".to_owned() + &ip.trim().to_string(),
         _ => return "error".to_owned(),
     }
 }
@@ -308,6 +373,6 @@ pub fn print_menu(
     }
 
     if filters {
-        let _settings: () = print_filters();
+        let _settings = print_filters();
     }
 }
