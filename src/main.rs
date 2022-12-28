@@ -10,6 +10,7 @@ use std::thread;
 
 use netanalyzer::args::Args;
 use netanalyzer::parser;
+use netanalyzer::report;
 
 use netanalyzer::menu::print_menu;
 use netanalyzer::settings::check_file;

@@ -154,7 +154,7 @@ pub fn create_hashmap(buffer: Vec<Packet>) -> HashMap<ReportHeader, Report> {
                 let time2 = l.timestamp.clone();
 
                 Report {
-                    packet: s,
+                    packet: l,
                     total_bytes: bytes as u64,
                     init_time: time,
                     finish_time: time2
