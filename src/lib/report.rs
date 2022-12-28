@@ -2,7 +2,7 @@ use std::net::IpAddr;
 use std::io::Write;
 use csv::{Writer, WriterBuilder};
 use crate::parser::Packet;
-use std::path::Path;
+
 use serde::Serialize;
 use std::fs::{create_dir, File, set_permissions};
 use std::os::unix::fs::PermissionsExt;
@@ -56,13 +56,12 @@ impl ReportWriter {
                 }
             },
             false => {
-                let path = Path::new(format!("{}-{}.txt", filename, num));
-                let filetxt = File::create(&path);
+                let filetxt = File::create(format!("{}-{}.txt", filename, num));
                 return Self {
                     csv_or_txt,
                     filename: filename.to_string(),
                     csv_writer: None,
-                    txt_writer: Some(Box::new(filetxt))
+                    txt_writer: Some(Box::new(filetxt.unwrap()))
                 }
             }
         }

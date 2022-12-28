@@ -332,8 +332,9 @@ pub fn print_menu(
         eprintln!("{}", "\t-l, --list:\t\tShow the net interfaces present in the system without launching the sniffing".red());
         eprintln!(
             "{}",
-            "\t-c, --commands\t\tShow all possible commands\n".red()
+            "\t-c, --commands\t\tShow all possible commands".red()
         );
+        eprintln!("{}", "\t-f, --filters: \t\tSet the filters for the sniffing".red());
 
         eprintln!(
             "\n{}",
