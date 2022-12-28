@@ -5,12 +5,14 @@ use pcap::{Capture, Device};
 use std::io;
 use std::io::Write;
 use std::sync::mpsc::channel;
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, RwLock, Mutex};
 use std::thread;
+use std::time::Duration;
 
 use netanalyzer::args::Args;
 use netanalyzer::parser;
 use netanalyzer::report;
+use netanalyzer::settings::Settings;
 
 use netanalyzer::menu::print_menu;
 use netanalyzer::settings::check_file;
@@ -54,13 +56,14 @@ fn main() {
     println!("{}", "Press q and ENTER to stop the sniffing".bold().blue());
 
     let (tx_snif_pars, rx_snif_pars) = channel::<Vec<u8>>();
-    let (tx_pars_report, rx_pars_report) = channel::<parser::Packet>();
+    let (tx_pars_report, rx_parse_report) = channel::<parser::Packet>();
 
     let rwlock = Arc::new(RwLock::new(false));
     let pause_handler = Arc::clone(&rwlock);
     let pause_handler_snif = Arc::clone(&rwlock);
     let pause_handler_parse = Arc::clone(&rwlock);
-    // let pause_handler_rep = Arc::clone(&rwlock);
+    let pause_handler_rep = Arc::clone(&rwlock);
+    let pause_handler_wrep = Arc::clone(&rwlock);
 
     // Thread for sniffing the packets on the network via pcap
     let sniffing_thread = thread::spawn(move || {
@@ -132,10 +135,34 @@ fn main() {
         }
     });
 
+    let report_queue_lock = Arc::new(Mutex::new(Vec::<parser::Packet>::new()));
+    let report_queue_clone = Arc::clone(&report_queue_lock);
+
+    // Thread used to fill the queue of packets waiting to be written in the report
     let report_thread = thread::spawn(move || {
-        // let lock = &*pause_handler_rep;
-        while let Ok(_packet) = rx_pars_report.recv() {
-            // TODO: add packet to report queue
+        let lock = &*pause_handler_rep;
+        let queue_lock = &*report_queue_lock;
+        while let Ok(packet) = rx_parse_report.recv() {
+            let pause = lock.read().unwrap();
+            if !*pause {
+                let mut queue_l = queue_lock.lock().unwrap();
+                queue_l.push(packet);
+            }
+        }
+    });
+
+    let write_report_thread = thread::spawn(move || {
+        let lock = &*&pause_handler_wrep;
+        let queue_lock = &*report_queue_clone;
+
+        //let report_path = report::create_directory(filename)
+        loop {
+            let pause = lock.read().unwrap();
+            if !*pause {
+                let mut queue_l = queue_lock.lock().unwrap();
+
+            }
+            thread::sleep(Duration::from_secs(timeout.unsigned_abs()));
         }
     });
 
