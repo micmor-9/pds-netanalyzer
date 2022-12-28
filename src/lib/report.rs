@@ -146,12 +146,12 @@ pub fn create_hashmap(buffer: Vec<Packet>) -> HashMap<ReportHeader, Report> {
         if report.contains_key(&p_header) {
             let mut update: &mut Report = report.get_mut(&p_header).unwrap();
             update.total_bytes += bytes as u64;
-            update.stop_time = s.timestamp;
+            update.stop_time = l.timestamp;
         } else {
 
             report.insert(p_header, {
-                let time = s.timestamp.clone();
-                let time2 = s.timestamp.clone();
+                let time = l.timestamp.clone();
+                let time2 = l.timestamp.clone();
 
                 Report {
                     packet: s,
