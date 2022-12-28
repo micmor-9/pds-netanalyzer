@@ -1,6 +1,8 @@
-use std::fs::File;
-use std::io;
+use crate::args::Args;
+use clap::Parser;
+use std::fs::{self, File};
 use std::io::BufRead;
+use std::io::{self, Write};
 use std::path::Path;
 
 #[derive(Debug)]
@@ -11,7 +13,7 @@ pub struct Settings {
     pub filename: Option<String>,
 }
 impl Settings {
-    pub fn new(self) -> Self {
+    pub fn new() -> Self {
         if let Ok(lines) = read_lines("./ConfigurationFile.txt") {
             let mut vec = vec![];
             // Consumes the iterator, returns an (Optional) String
@@ -21,17 +23,18 @@ impl Settings {
                 }
             }
             let mut tipo = true;
-            if vec[1] == "1" {
+            if vec[3] == "1" {
                 tipo = true;
-            } else if vec[1] == "0" {
+            } else if vec[3] == "0" {
                 tipo = false;
             }
-            let timeoutint: i64 = vec[2].parse().unwrap();
+            println!("{}", vec[2]);
+            let timeoutint: i64 = vec[1].parse().unwrap();
             return Settings {
                 interface: Some(vec[0].to_string()),
                 csv: Some(tipo),
                 timeout: Some(timeoutint),
-                filename: Some(vec[3].to_string()),
+                filename: Some(vec[2].to_string()),
             };
         } else {
             return Settings {
@@ -50,4 +53,57 @@ where
 {
     let file = File::open(filename)?;
     Ok(io::BufReader::new(file).lines())
+}
+
+pub fn check_file(interface_name: String, tipo: bool, timeout: i64, filename: String) -> () {
+    let rs = Path::new("ConfigurationFile.txt").exists();
+    if rs == true
+        && interface_name == "eth0"
+        && tipo == false
+        && timeout == 10
+        && filename == "report"
+    {
+        println!(" Configuration File exsist ");
+    } else if rs == false
+        && interface_name == "eth0"
+        && tipo == false
+        && timeout == 10
+        && filename == "report"
+    {
+        create_conf_file().unwrap();
+        println!("Default Configuration File created with default configs (interface name = eth0, tipo = txt, timeout = 10, filename = report");
+    } else if rs == true
+        && (interface_name != "eth0" || tipo != false || timeout != 10 || filename != "report")
+    {
+        fs::remove_file("ConfigurationFile.txt").expect("File delete failed");
+
+        create_conf_file().unwrap();
+        println!("Customed Configuration File updated");
+    } else if rs == false
+        && (interface_name != "eth0" || tipo != false || timeout != 10 || filename != "report")
+    {
+        fs::remove_file("ConfigurationFile.txt").expect("File delete failed");
+        create_conf_file().unwrap();
+        println!("Customed Configuration File created");
+    }
+    let set = Settings::new();
+    println!("{:?}", set);
+}
+
+pub fn create_conf_file() -> std::io::Result<()> {
+    let args = Args::parse();
+    let interfaccia = format!("{}\n", args.interface);
+    let tempo = format!("{}\n", args.timeout);
+    let nome = format!("{}\n", args.reportname);
+    let tipo = match args.acsv {
+        true => "1",
+        false => "0",
+    };
+    let mut f = File::create("ConfigurationFile.txt")?;
+    f.write_all(interfaccia.as_bytes())?;
+    f.write_all(tempo.as_bytes())?;
+    f.write_all(nome.as_bytes())?;
+    f.write_all(tipo.as_bytes())?;
+    Ok(())
+    //.to_string() + b"{}\n", args.csv +b"{}\n",args.timeout + b"{}\n", args.filename)?;
 }
