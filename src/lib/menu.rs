@@ -1,8 +1,10 @@
 use std::io;
 
 use crate::args::Args;
+use crate::settings::check_file;
 use clap::Parser;
 use pcap::Device;
+use std::path::Path;
 use std::process;
 
 use colored::Colorize;
@@ -299,7 +301,13 @@ pub fn print_menu(
     interfaces: Vec<Device>,
     filters: bool,
 ) {
-    if list_mode && interface_name == "listview__".to_string() {
+    let args = Args::parse();
+    let interface = args.interface;
+    let timeout = args.timeout;
+    let file_name = args.reportname;
+    let tipe =  args.acsv;
+
+    if list_mode && interface_name == "eth0".to_string() {
         println!("\n{}", "THE AVAILABLE NET INTERFACE ARE".bold().green());
         println!("\n{0: <10} | {1: <20}", "Name", "Status");
         println!("--------------------------");
@@ -311,8 +319,10 @@ pub fn print_menu(
             )
         });
         println!("\n");
+        process::exit(1);
+
     }
-    if !list_mode && interface_name == "listview__".to_string() && !option && !filters {
+    if !list_mode && !option && !filters && !Path::new("./ConfigurationFile.txt").exists() {
         // TODO -> first af all search for a configuration file and then ask to choose the parameters
         eprintln!("\n{}", "No configuration file found".bold().red());
         eprintln!(
@@ -324,6 +334,23 @@ pub fn print_menu(
             "{}",
             "\t-c, --commands\t\tShow all possible commands\n".red()
         );
+
+        eprintln!(
+            "\n{}",
+            "If you want to create a default configuration file press Y "
+        );
+
+        let mut buf = String::new();
+        buf.clear();
+        io::stdin().read_line(&mut buf).expect("errore");
+
+        match buf.as_str().trim() {
+            "Y" | "y" => {
+                check_file(interface, tipe, timeout, file_name);
+            }
+            _ => {},
+        }
+
         process::exit(1);
     }
     if option {
@@ -364,6 +391,7 @@ pub fn print_menu(
             "Set report file type to csv",
             "\t\t-- -c\n".bold().green()
         );
+        process::exit(1);
     }
 
     if filters {
