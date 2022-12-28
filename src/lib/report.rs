@@ -1,13 +1,13 @@
 use std::net::IpAddr;
 use std::io::Write;
 use csv::{Writer, WriterBuilder};
-use crate::report::Reporter::{CSV, TXT};
+use crate::parser::Packet;
 use std::path::Path;
 use serde::Serialize;
 use std::fs::{create_dir, File, set_permissions};
 use std::os::unix::fs::PermissionsExt;
 use std::collections::HashMap;
-
+use std::fmt::{Formatter, Display};
 
 #[derive(PartialEq, Eq, Hash)]
 pub struct ReportHeader {
@@ -24,10 +24,10 @@ pub struct Report {
     pub finish_time: String
 }
 
-impl fmt::Display for Report {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        //        "Interface\t| Source IP address\t| Source Port\t| Dest IP address \t| Dest Port\t| Timestamp\t|  Bytes\t| Transport \t| Application \n"
-        write!(f, "|{0: <1}\t| {}\t| {2: <5}\t| {3: <25} ({4}) \t| {5: <5}\t| {6: <3}\t| {7: <4} \t| {8: <4}\t| {9: <15}\t| {10: <15}", self.packet.interface, self.packet.src_addr, self.packet.src_port.unwrap_or(0), self.packet.dest_addr, self.packet.res_name, self.packet.dest_port.unwrap_or(0), self.total_bytes, self.packet.transport, self.packet.application, self.start_time, self.stop_time )
+impl Display for Report {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        //| Interface \t| Source IP Address \t| Destination IP Address \t| Source Port \t| Dest. Port \t| Length \t| Transp. Protocol \t| Application Protocol \t| Timestamp \t|
+        write!(f, "| {0:<5} | {1:<25} | {2:<25} | {3:<5} \t| {4:<5} \t| {5:<4} \t| {6:<25} | {7:<25} | {8} \t|", self.packet.interface, self.packet.src_address, self.packet.dest_address, self.packet.src_port.unwrap_or(0), self.packet.dest_port.unwrap_or(0), self.packet.length, self.packet.transport, self.packet.application, self.packet.timestamp)
     }
 }
 
@@ -51,7 +51,7 @@ impl ReportWriter {
                 return Self {
                     csv_or_txt,
                     filename: filename.to_string(),
-                    csv_writer: Some(Box::new(filecsv)),
+                    csv_writer: Some(Box::new(filecsv.unwrap())),
                     txt_writer: None
                 }
             },
@@ -71,10 +71,10 @@ impl ReportWriter {
 
     pub fn get_where_to_write(&mut self) -> WriterType {
         match &mut self.csv_writer{
-            Some(thing) => CSV(&mut **thing),
+            Some(thing) => WriterType::CSV(&mut **thing),
             None =>{
                 match &mut self.txt_writer {
-                    Some(thing) => TXT(&mut **thing),
+                    Some(thing) => WriterType::TXT(&mut **thing),
                     _ => panic!("Impossible")
                 }
             }
@@ -138,15 +138,15 @@ pub fn create_hashmap(buffer: Vec<Packet>) -> HashMap<ReportHeader, Report> {
         let bytes = l.length;
 
         let p_header = ReportHeader {
-            source_address: l.source_address,
-            destination_address: l.destination_address,
-            source_port: l.source_port,
-            destination_port: l.destination_port
+            source_address: l.src_address,
+            destination_address: l.dest_address,
+            source_port: l.src_port,
+            destination_port: l.dest_port
         };
         if report.contains_key(&p_header) {
             let mut update: &mut Report = report.get_mut(&p_header).unwrap();
             update.total_bytes += bytes as u64;
-            update.stop_time = s.timestamp;
+            update.finish_time = s.timestamp;
         } else {
 
             report.insert(p_header, {
