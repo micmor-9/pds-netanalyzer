@@ -1,4 +1,4 @@
-listview__
+eth0
 10
 report
 0

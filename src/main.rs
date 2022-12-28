@@ -5,16 +5,18 @@ use pcap::{Capture, Device};
 use std::fs::File;
 use std::io;
 use std::io::Write;
-// use std::process;
 use std::sync::mpsc::channel;
 use std::sync::{Arc, RwLock};
 use std::thread;
 
 use netanalyzer::args::Args;
 use netanalyzer::parser;
-// use netanalyzer::settings::Settings;
+use netanalyzer::settings::Settings;
 
 use ::netanalyzer::menu::print_menu;
+// use std::io::prelude;
+use std::fs;
+use std::path::Path;
 
 fn main() {
     let args = Args::parse();
@@ -25,11 +27,13 @@ fn main() {
     let interface = Device::list().unwrap();
     let filters = args.filters;
 
-    print_menu(interface_name, list_mode, option, interface, filters);
+    let inter = interface_name.clone();
+    print_menu(inter, list_mode, option, interface, filters);
 
     // let a = &interface_name;
-    // let tipo = args.acsv;
-    // let timeout = args.timeout;
+    let tipo = args.acsv;
+    let timeout = args.timeout;
+    let filename = args.reportname;
     // let  mò = args.name;
 
     let interfaces = Device::list().unwrap();
@@ -146,15 +150,28 @@ fn main() {
         }
     });
 
-    /*let conf_file = create_conf_file();
-    match conf_file {
-        Ok(_) => println!("Configuration file created successfully!"),
-        Err(err) => println!(
-            "{} {}",
-            "Error in configuration file creation".bold().red(),
-            err.to_string().bold().red()
-        ),
-    }*/
+    
+    let rs = Path::new("ConfigurationFile.txt").exists();
+    if rs == true && interface_name == "listview__" && tipo == false && timeout == 10 && filename == "report" {
+        println!(" Configuration File exsist ");
+    }
+    else if rs == false && interface_name == "listview__" && tipo == false && timeout == 10 && filename == "report" {
+        create_conf_file().unwrap();
+        println!("Default Configuration File created with default configs (interface name = listview, tipo = txt, timeout = 10, filename = report");
+    }
+    else if rs == true && (interface_name != "listview__" || tipo != false || timeout != 10 || filename != "report") {
+        fs::remove_file("ConfigurationFile.txt").expect("File delete failed");
+
+        create_conf_file().unwrap();
+        println!("Customed Configuration File updated");
+    }
+    else if rs == false && (interface_name != "listview__" || tipo != false || timeout != 10 || filename != "report") {
+        fs::remove_file("ConfigurationFile.txt").expect("File delete failed");
+        create_conf_file().unwrap();
+        println!("Customed Configuration File created");
+    }
+    let set = Settings::new();
+    println!("{:?}", set);
 
     //Join the threads
     sniffing_thread.join().unwrap();
@@ -162,6 +179,7 @@ fn main() {
     report_thread.join().unwrap();
     pause_resume_thread.join().unwrap();
 }
+    
 
 pub fn create_conf_file() -> std::io::Result<()> {
     let args = Args::parse();
@@ -180,3 +198,7 @@ pub fn create_conf_file() -> std::io::Result<()> {
     Ok(())
     //.to_string() + b"{}\n", args.csv +b"{}\n",args.timeout + b"{}\n", args.filename)?;
 }
+
+
+
+
