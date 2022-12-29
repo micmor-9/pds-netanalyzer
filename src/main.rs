@@ -11,7 +11,6 @@ use std::time::Duration;
 
 use netanalyzer::args::Args;
 use netanalyzer::parser;
-use netanalyzer::report;
 
 
 use netanalyzer::menu::print_menu;
