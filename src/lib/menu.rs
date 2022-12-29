@@ -335,7 +335,7 @@ pub fn print_menu(
         );
 
         eprintln!("{}", "\t-c, --commands\t\tShow all possible commands".red());
-        
+
         eprintln!(
             "{}",
             "\t-f, --filters: \t\tSet the filters for the sniffing".red()

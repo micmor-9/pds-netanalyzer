@@ -14,7 +14,7 @@ pub enum WriterType<'a> {
 pub struct ReportWriter {
     pub csv_or_txt: bool,
     pub filename: String,
-    num : i32,
+    num: i32,
     csv_writer: Option<Box<Writer<File>>>,
     txt_writer: Option<Box<File>>,
 }
@@ -72,11 +72,19 @@ impl ReportWriter {
                     "Bytes",
                     "Transport Protocol",
                     "Application Protocol",
-                    "Timestamp"
+                    "Timestamp",
                 ])
                 .unwrap(),
             WriterType::TXT(file) => {
-                writeln!(file, "Report # {} generated at {}", report_number, chrono::offset::Local::now().format("%Y-%m-%d %H:%M:%S").to_string()).unwrap();
+                writeln!(
+                    file,
+                    "Report # {} generated at {}",
+                    report_number,
+                    chrono::offset::Local::now()
+                        .format("%Y-%m-%d %H:%M:%S")
+                        .to_string()
+                )
+                .unwrap();
                 writeln!(file,"| Int.  | Source IP	            | Destination IP    	| Source Port	| Dest. Port	| Bytes | Transport Protocol	    | Application Protocol 	| Timestamp		|").unwrap();
             }
         }
@@ -120,7 +128,7 @@ pub fn create_directory(filename: &str) -> String {
             Ok(_) => {}
         }
     }
-    
+
     folder
 }
 

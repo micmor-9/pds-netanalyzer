@@ -1,10 +1,10 @@
 use crate::args::Args;
 use clap::Parser;
+use colored::*;
 use std::fs::{self, File};
 use std::io::BufRead;
 use std::io::{self, Write};
 use std::path::Path;
-use colored::*;
 
 #[derive(Debug)]
 pub struct Settings {
@@ -72,30 +72,37 @@ pub fn check_file(interface_name: &String, tipo: &bool, timeout: &i64, filename:
         && *filename == "report"
     {
         create_conf_file().unwrap();
-        println!("{}", "Default Configuration File created with default configs".green().bold());
-        println!("{}", "(interface name = en0, tipo = txt, timeout = 10, filename = report)\n".cyan().bold());
+        println!(
+            "{}",
+            "Default Configuration File created with default configs"
+                .green()
+                .bold()
+        );
+        println!(
+            "{}",
+            "(interface name = en0, tipo = txt, timeout = 10, filename = report)\n"
+                .cyan()
+                .bold()
+        );
     } else if rs == true
-        && ( /*interface_name != "eth0" ||*/ *tipo != false || *timeout != 10 || *filename != "report")
+        && (/*interface_name != "eth0" ||*/*tipo != false || *timeout != 10 || *filename != "report")
     {
         fs::remove_file("ConfigurationFile.txt").expect("File delete failed");
 
         create_conf_file().unwrap();
         println!("Customed Configuration File updated");
     } else if rs == false
-        && ( /* interface_name != "eth0" || */ *tipo != false || *timeout != 10 || *filename != "report")
+        && (/* interface_name != "eth0" || */*tipo != false || *timeout != 10 || *filename != "report")
     {
         fs::remove_file("ConfigurationFile.txt").expect("File delete failed");
         create_conf_file().unwrap();
         println!("Customed Configuration File created");
     }
-    // let set = Settings::new();
-    // println!("STO CONTROLLANDO LA PROSSIMA STAMPA --------------------------------------------");
-    // println!("---------------------- {:?} ----------------------", set);
 }
 
 pub fn create_conf_file() -> std::io::Result<()> {
     let args = Args::parse();
-    let interfaccia = format!("{}\n", args.interface);
+    let interfaccia = format!("{}\n", "en0");
     let tempo = format!("{}\n", args.timeout);
     let nome = format!("{}\n", args.reportname);
     let tipo = match args.acsv {
@@ -109,4 +116,14 @@ pub fn create_conf_file() -> std::io::Result<()> {
     f.write_all(tipo.as_bytes())?;
     Ok(())
     //.to_string() + b"{}\n", args.csv +b"{}\n",args.timeout + b"{}\n", args.filename)?;
+}
+
+pub fn read_conf_file() -> String {
+    let err_msg = "Error reading from file <ConfigurationFile.txt".red();
+
+    let contents = fs::read_to_string("ConfigurationFile.txt").expect(&err_msg);
+
+    let interface = contents.split_whitespace().next().unwrap_or("");
+
+    return interface.to_string();
 }
