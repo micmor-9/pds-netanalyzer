@@ -11,8 +11,7 @@ use std::time::Duration;
 
 use netanalyzer::args::Args;
 use netanalyzer::parser;
-use netanalyzer::report;
-use netanalyzer::settings::Settings;
+
 
 use netanalyzer::menu::print_menu;
 use netanalyzer::settings::check_file;
@@ -37,6 +36,7 @@ fn main() {
     let interfaces = Device::list().unwrap();
 
     // Select first interface available temporarly to start sniffing
+    // TODO: Select correct interface
     let interface = interfaces.first().unwrap().clone();
     let interface_bis = interface.clone();
 
@@ -147,6 +147,7 @@ fn main() {
             if !*pause {
                 let mut queue_l = queue_lock.lock().unwrap();
                 queue_l.push(packet);
+                drop(queue_l);
             }
         }
     });
@@ -155,7 +156,8 @@ fn main() {
         let lock = &*&pause_handler_wrep;
         let queue_lock = &*report_queue_clone;
 
-        //let report_path = report::create_directory(filename)
+        // TODO: Write queue to report and flush buffer
+        
         loop {
             let pause = lock.read().unwrap();
             if !*pause {
