@@ -1,6 +1,7 @@
 use crate::args::Args;
 use clap::Parser;
 use colored::*;
+use pcap::Device;
 use std::fs::{self, File};
 use std::io::BufRead;
 use std::io::{self, Write};
@@ -58,72 +59,71 @@ where
 
 pub fn check_file(interface_name: &String, tipo: &bool, timeout: &i64, filename: &String) -> () {
     let rs = Path::new("ConfigurationFile.txt").exists();
+    let default_interface = Device::list().unwrap().first().unwrap().clone().name;
     if rs == true
-        // && interface_name == "eth0"
+        // && *interface_name == default_interface
         && *tipo == false
         && *timeout == 10
         && *filename == "report"
     {
-        println!(" Configuration File exsist ");
+        println!(" Configuration File exists ");
     } else if rs == false
-        // && interface_name == "eth0"
+        // && *interface_name == default_interface
         && *tipo == false
         && *timeout == 10
         && *filename == "report"
     {
-        create_conf_file().unwrap();
-        println!(
-            "{}",
-            "Default Configuration File created with default configs"
-                .green()
-                .bold()
-        );
-        println!(
-            "{}",
-            "(interface name = en0, tipo = txt, timeout = 10, filename = report)\n"
-                .cyan()
-                .bold()
-        );
+        create_conf_file();
+        println!("Default Configuration File created with default configs (interface name = eth0, tipo = txt, timeout = 10, filename = report");
     } else if rs == true
-        && (/*interface_name != "eth0" ||*/*tipo != false || *timeout != 10 || *filename != "report")
+        && (/* *interface_name != default_interface ||*/*tipo != false || *timeout != 10 || *filename != "report")
     {
         fs::remove_file("ConfigurationFile.txt").expect("File delete failed");
-
-        create_conf_file().unwrap();
-        println!("Customed Configuration File updated");
+        create_conf_file();
+        println!("Customized Configuration File updated");
     } else if rs == false
-        && (/* interface_name != "eth0" || */*tipo != false || *timeout != 10 || *filename != "report")
+        && (*interface_name != default_interface
+            || *tipo != false
+            || *timeout != 10
+            || *filename != "report")
     {
-        fs::remove_file("ConfigurationFile.txt").expect("File delete failed");
-        create_conf_file().unwrap();
-        println!("Customed Configuration File created");
+        create_conf_file();
+        println!("Customized Configuration File created");
     }
 }
 
-pub fn create_conf_file() -> std::io::Result<()> {
+pub fn create_conf_file() -> () {
     let args = Args::parse();
-    let interfaccia = format!("{}\n", "en0");
+    let interfaccia = format!(
+        "{}\n",
+        Device::list().unwrap().first().unwrap().clone().name
+    );
     let tempo = format!("{}\n", args.timeout);
     let nome = format!("{}\n", args.reportname);
     let tipo = match args.acsv {
         true => "1",
         false => "0",
     };
-    let mut f = File::create("ConfigurationFile.txt")?;
-    f.write_all(interfaccia.as_bytes())?;
-    f.write_all(tempo.as_bytes())?;
-    f.write_all(nome.as_bytes())?;
-    f.write_all(tipo.as_bytes())?;
-    Ok(())
-    //.to_string() + b"{}\n", args.csv +b"{}\n",args.timeout + b"{}\n", args.filename)?;
+    let mut f = File::create("ConfigurationFile.txt").unwrap();
+    f.write_all(interfaccia.as_bytes())
+        .expect("File writing error");
+    f.write_all(tempo.as_bytes()).expect("File writing error");
+    f.write_all(nome.as_bytes()).expect("File writing error");
+    f.write_all(tipo.as_bytes()).expect("File writing error");
 }
 
 pub fn read_conf_file() -> String {
     let err_msg = "Error reading from file <ConfigurationFile.txt".red();
 
-    let contents = fs::read_to_string("ConfigurationFile.txt").expect(&err_msg);
+    let rs = Path::new("ConfigurationFile.txt").exists();
 
-    let interface = contents.split_whitespace().next().unwrap_or("");
+    if rs {
+        let contents = fs::read_to_string("ConfigurationFile.txt").expect(&err_msg);
 
-    return interface.to_string();
+        let interface = contents.split_whitespace().next().unwrap_or("");
+        return interface.to_string();
+    } else {
+        return "nu cazzu".to_string();
+    }
+
 }

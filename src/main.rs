@@ -48,7 +48,7 @@ fn main() {
         });
 
     let interface_bis = interface.clone();
-
+    
     check_file(&interface_name, &tipe, &timeout, &filename);
 
     //Set up pcap capture in promisc mode
