@@ -20,12 +20,11 @@ pub struct Args {
     // view all possible commads without start sniffing
     #[arg(short, long, action)]
     pub commands: bool,
-    
+
     // view all filters
     #[arg(short, long, action, default_value = "false")]
     pub filters: bool,
 
     #[arg(short, long, action)]
     pub acsv: bool,
-
 }

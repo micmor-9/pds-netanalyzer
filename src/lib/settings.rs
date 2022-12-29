@@ -56,33 +56,33 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-pub fn check_file(interface_name: String, tipo: bool, timeout: i64, filename: String) -> () {
+pub fn check_file(interface_name: &String, tipo: &bool, timeout: &i64, filename: &String) -> () {
     let rs = Path::new("ConfigurationFile.txt").exists();
     if rs == true
-        && interface_name == "en0"
-        && tipo == false
-        && timeout == 10
-        && filename == "report"
+        && interface_name == "eth0"
+        && *tipo == false
+        && *timeout == 10
+        && *filename == "report"
     {
         println!(" Configuration File exsist ");
     } else if rs == false
-        && interface_name == "en0"
-        && tipo == false
-        && timeout == 10
-        && filename == "report"
+        && interface_name == "eth0"
+        && *tipo == false
+        && *timeout == 10
+        && *filename == "report"
     {
         create_conf_file().unwrap();
         println!("{}", "Default Configuration File created with default configs".green().bold());
         println!("{}", "(interface name = en0, tipo = txt, timeout = 10, filename = report)\n".cyan().bold());
     } else if rs == true
-        && (interface_name != "en0" || tipo != false || timeout != 10 || filename != "report")
+        && (interface_name != "eth0" || *tipo != false || *timeout != 10 || *filename != "report")
     {
         fs::remove_file("ConfigurationFile.txt").expect("File delete failed");
 
         create_conf_file().unwrap();
         println!("Customed Configuration File updated");
     } else if rs == false
-        && (interface_name != "en0" || tipo != false || timeout != 10 || filename != "report")
+        && (interface_name != "eth0" || *tipo != false || *timeout != 10 || *filename != "report")
     {
         fs::remove_file("ConfigurationFile.txt").expect("File delete failed");
         create_conf_file().unwrap();
