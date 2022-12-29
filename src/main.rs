@@ -2,20 +2,18 @@ use clap::Parser;
 use colored::*;
 use netanalyzer::error::ParserError;
 use pcap::{Capture, Device};
-use std::io;
+use std::{io, process};
 use std::io::Write;
 use std::sync::mpsc::channel;
-use std::sync::{Arc, RwLock, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 use std::thread;
-use std::time::Duration;
 
 use netanalyzer::args::Args;
 use netanalyzer::parser;
-
+use netanalyzer::report::ReportWriter;
 
 use netanalyzer::menu::print_menu;
 use netanalyzer::settings::check_file;
-
 
 fn main() {
     let args = Args::parse();
@@ -40,7 +38,8 @@ fn main() {
     let interface = interfaces.first().unwrap().clone();
     let interface_bis = interface.clone();
 
-    
+    check_file(&interface_name, &tipo, &timeout, &filename);
+
     //Set up pcap capture in promisc mode
     let mut capture = Capture::from_device(interface)
         .unwrap() //get Ok() from result
@@ -53,17 +52,16 @@ fn main() {
         "{}",
         "Press ENTER to pause/resume the sniffing.".bold().cyan()
     );
-    println!("{}", "Press q and ENTER to stop the sniffing".bold().blue());
+    println!("{}", "Press q and ENTER (while sniffing is paused) to stop the sniffing".bold().blue());
 
     let (tx_snif_pars, rx_snif_pars) = channel::<Vec<u8>>();
-    let (tx_pars_report, rx_parse_report) = channel::<parser::Packet>();
+    let (tx_parse_report, rx_parse_report) = channel::<parser::Packet>();
 
     let rwlock = Arc::new(RwLock::new(false));
     let pause_handler = Arc::clone(&rwlock);
     let pause_handler_snif = Arc::clone(&rwlock);
     let pause_handler_parse = Arc::clone(&rwlock);
     let pause_handler_rep = Arc::clone(&rwlock);
-    let pause_handler_wrep = Arc::clone(&rwlock);
 
     // Thread for sniffing the packets on the network via pcap
     let sniffing_thread = thread::spawn(move || {
@@ -89,7 +87,7 @@ fn main() {
                 match parsed_packet {
                     Ok(res) => {
                         println!("{}", res);
-                        tx_pars_report.send(res).unwrap();
+                        tx_parse_report.send(res).unwrap();
                     }
                     Err(err) => match err {
                         ParserError::EthernetPacketUnrecognized => {}
@@ -128,47 +126,76 @@ fn main() {
                     drop(pause);
                 }
                 "q" | "Q" => {
-                    // TODO: implement the stop of all threads and the safe exit from the program
+                    let pause = lock.read().unwrap();
+                    if *pause {
+                        println!("{}", "Sniffing stopped. The program is being exited...".bold().bright_red());
+                        process::exit(0);
+                    }
+                    drop(pause);
                 }
                 _ => {}
             }
         }
     });
 
-    let report_queue_lock = Arc::new(Mutex::new(Vec::<parser::Packet>::new()));
-    let report_queue_clone = Arc::clone(&report_queue_lock);
+    let timer_flag = Arc::new(Mutex::new(false));
 
-    // Thread used to fill the queue of packets waiting to be written in the report
     let report_thread = thread::spawn(move || {
-        let lock = &*pause_handler_rep;
-        let queue_lock = &*report_queue_lock;
-        while let Ok(packet) = rx_parse_report.recv() {
-            let pause = lock.read().unwrap();
-            if !*pause {
-                let mut queue_l = queue_lock.lock().unwrap();
-                queue_l.push(packet);
-                drop(queue_l);
-            }
-        }
-    });
+        let timer = timer::Timer::new();
+        let timer_flag_clone = timer_flag.clone();
+        let mut index = 0;
 
-    let write_report_thread = thread::spawn(move || {
-        let lock = &*&pause_handler_wrep;
-        let queue_lock = &*report_queue_clone;
+        let _timer_guard =
+            timer.schedule_repeating(chrono::Duration::seconds(timeout), move || {
+                let lock = &*&pause_handler_rep;
+                let pause = lock.read().unwrap();
 
-        // TODO: Write queue to report and flush buffer
-        
+                if !*pause {
+                    let mut flag = timer_flag_clone.lock().unwrap();
+                    *flag = true;
+                    drop(flag);
+                }
+
+                drop(pause);
+            });
+
         loop {
-            let pause = lock.read().unwrap();
-            if !*pause {
-                let mut queue_l = queue_lock.lock().unwrap();
+            let mut queue = Vec::<parser::Packet>::new();
 
+            while let Ok(packet) = rx_parse_report.recv() {
+                queue.push(packet);
+                let mut flag = timer_flag.lock().unwrap();
+                if *flag {
+                    *flag = false;
+                    drop(flag);
+                    break;
+                }
+                drop(flag);
             }
-            thread::sleep(Duration::from_secs(timeout.unsigned_abs()));
+
+            index += 1;
+            let mut report_handle = ReportWriter::new(tipo, &filename.as_str(), index);
+            report_handle.init_report();
+
+            for packet in queue {
+                report_handle.write_report_line(packet);
+            }
+
+            println!(
+                "{}{}{} {} {}{} {}",
+                "[".bold().cyan(),
+                chrono::offset::Local::now()
+                    .format("%Y-%m-%d %H:%M:%S")
+                    .to_string().bold().cyan(),
+                "]".bold().cyan(),
+                "Report".bold().cyan(),
+                "#".bold().cyan(),
+                index.to_string().bold().cyan(),
+                "generated".bold().cyan()
+            );
+            report_handle.close_report();            
         }
     });
-
-    check_file(interface_name, tipo, timeout, filename);
 
     //Join the threads
     sniffing_thread.join().unwrap();
@@ -176,5 +203,3 @@ fn main() {
     report_thread.join().unwrap();
     pause_resume_thread.join().unwrap();
 }
-
-
