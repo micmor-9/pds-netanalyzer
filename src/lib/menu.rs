@@ -305,7 +305,7 @@ pub fn print_menu(
     let interface = args.interface;
     let timeout = args.timeout;
     let file_name = args.reportname;
-    let tipe =  args.acsv;
+    let tipo = args.acsv;
 
     if list_mode && interface_name == "eth0".to_string() {
         println!("\n{}", "THE AVAILABLE NET INTERFACE ARE".bold().green());
@@ -319,8 +319,7 @@ pub fn print_menu(
             )
         });
         println!("\n");
-        process::exit(1);
-
+        process::exit(0);
     }
     if !list_mode && !option && !filters && !Path::new("./ConfigurationFile.txt").exists() {
         // TODO -> first af all search for a configuration file and then ask to choose the parameters
@@ -330,11 +329,11 @@ pub fn print_menu(
             "\t-i, --interface\t\tName of the interface to be used for the sniffing".red()
         );
         eprintln!("{}", "\t-l, --list:\t\tShow the net interfaces present in the system without launching the sniffing".red());
+        eprintln!("{}", "\t-c, --commands\t\tShow all possible commands".red());
         eprintln!(
             "{}",
-            "\t-c, --commands\t\tShow all possible commands".red()
+            "\t-f, --filters: \t\tSet the filters for the sniffing".red()
         );
-        eprintln!("{}", "\t-f, --filters: \t\tSet the filters for the sniffing".red());
 
         eprintln!(
             "\n{}",
@@ -347,12 +346,12 @@ pub fn print_menu(
 
         match buf.as_str().trim() {
             "Y" | "y" => {
-                check_file(interface, tipe, timeout, file_name);
+                check_file(&interface, &tipo, &timeout, &file_name);
             }
-            _ => {},
+            _ => {}
         }
 
-        process::exit(1);
+        process::exit(0);
     }
     if option {
         println!("\n{}", "MENU".green().bold());
@@ -392,7 +391,7 @@ pub fn print_menu(
             "Set report file type to csv",
             "\t\t-- -c\n".bold().green()
         );
-        process::exit(1);
+        process::exit(0);
     }
 
     if filters {
