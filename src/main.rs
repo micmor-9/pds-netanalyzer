@@ -34,20 +34,23 @@ fn main() {
     let interfaces = Device::list().unwrap();
 
 
-    // PROVA
-    let inter2 = interface_name.clone();
-    println!("{}", inter2);
-    if inter2.is_empty() {
-        println!("------------------------------ NESSUNA INTERFACCIA PASSATA ------------------------------");
-
-    }
-
-    // 
-
-
-    // Select first interface available temporarly to start sniffing
     // TODO: Select correct interface
-    let interface = interfaces
+    // let interface = interfaces
+    //                                 .into_iter()
+    //                                 .filter(|i| i.name == interface_name)
+    //                                 .next()
+    //                                 .unwrap_or_else( || {
+    //                                     eprintln!("{}", "No such network interface: {}".red());
+    //                                     process::exit(1);
+    //                                 });
+
+    // Si deve controllare che args.filename sia vuoto
+    // Se tale campo è vuoto si devono controllare le impostazioni dal file di configurazione se esiste
+    let interface_name2 = interface_name.clone();
+
+    if interface_name2.is_empty() {
+        // prova a prendere le impostazioni dal file
+        let interface = interfaces
                                     .into_iter()
                                     .filter(|i| i.name == interface_name)
                                     .next()
@@ -55,8 +58,17 @@ fn main() {
                                         eprintln!("{}", "No such network interface: {}".red());
                                         process::exit(1);
                                     });
-
-
+    } else {
+        let interface = interfaces
+                                    .into_iter()
+                                    .filter(|i| i.name == interface_name)
+                                    .next()
+                                    .unwrap_or_else( || {
+                                        eprintln!("{}", "No such network interface: {}".red());
+                                        process::exit(1);
+                                    });
+    }
+    
     let interface_bis = interface.clone();
 
     check_file(&interface_name, &tipo, &timeout, &filename);
