@@ -390,7 +390,13 @@ pub fn print_menu(
             "{0: <2}  {1: <10}  {2: <10}",
             "6.",
             "Set report file type to csv",
-            "\t\t-- -c\n".bold().green()
+            "\t\t-- -c".bold().green()
+        );
+        println!(
+            "{0: <2}  {1: <10}  {2: <10}",
+            "7.",
+            "Set timeout",
+            "\t\t\t\t-- -t <value (in ms)>\n".bold().green()
         );
         process::exit(1);
     }
