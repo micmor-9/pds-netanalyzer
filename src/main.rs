@@ -8,6 +8,7 @@ use std::sync::mpsc::channel;
 use std::sync::{Arc, RwLock, Mutex};
 use std::thread;
 use std::time::Duration;
+use std::process;
 
 use netanalyzer::args::Args;
 use netanalyzer::parser;
@@ -35,9 +36,30 @@ fn main() {
 
     let interfaces = Device::list().unwrap();
 
+
+    // PROVA
+    let inter2 = interface_name.clone();
+    println!("{}", inter2);
+    if inter2.is_empty() {
+        println!("------------------------------ NESSUNA INTERFACCIA PASSATA ------------------------------");
+
+    }
+
+    // 
+
+
     // Select first interface available temporarly to start sniffing
     // TODO: Select correct interface
-    let interface = interfaces.first().unwrap().clone();
+    let interface = interfaces
+                                    .into_iter()
+                                    .filter(|i| i.name == interface_name)
+                                    .next()
+                                    .unwrap_or_else( || {
+                                        eprintln!("{}", "No such network interface: {}".red());
+                                        process::exit(1);
+                                    });
+
+
     let interface_bis = interface.clone();
 
     
