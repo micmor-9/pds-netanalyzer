@@ -126,12 +126,12 @@ fn main() {
                     drop(pause);
                 }
                 "q" | "Q" => {
-                    // TODO: implement the stop of all threads and the safe exit from the program
                     let pause = lock.read().unwrap();
                     if *pause {
                         println!("{}", "Sniffing stopped. The program is being exited...".bold().bright_red());
                         process::exit(0);
                     }
+                    drop(pause);
                 }
                 _ => {}
             }
@@ -158,7 +158,6 @@ fn main() {
 
                 drop(pause);
             });
-        // TODO: Write queue to report and flush buffer
 
         loop {
             let mut queue = Vec::<parser::Packet>::new();
