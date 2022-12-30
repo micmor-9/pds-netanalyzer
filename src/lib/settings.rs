@@ -1,5 +1,6 @@
 use crate::args::Args;
 use clap::Parser;
+use pcap::Device;
 use std::fs::{self, File};
 use std::io::BufRead;
 use std::io::{self, Write};
@@ -58,29 +59,29 @@ where
 pub fn check_file(interface_name: &String, tipo: &bool, timeout: &i64, filename: &String) -> () {
     let rs = Path::new("ConfigurationFile.txt").exists();
     if rs == true
-        && interface_name == "eth0"
+        && *interface_name == ""
         && *tipo == false
         && *timeout == 10
         && *filename == "report"
     {
         println!(" Configuration File exsist ");
     } else if rs == false
-        && interface_name == "eth0"
+        && *interface_name == ""
         && *tipo == false
         && *timeout == 10
         && *filename == "report"
     {
         create_conf_file().unwrap();
-        println!("Default Configuration File created with default configs (interface name = eth0, tipo = txt, timeout = 10, filename = report");
+        println!("Default Configuration File created with default configs");
     } else if rs == true
-        && (interface_name != "eth0" || *tipo != false || *timeout != 10 || *filename != "report")
+        && (*interface_name != "" || *tipo != false || *timeout != 10 || *filename != "report")
     {
         fs::remove_file("ConfigurationFile.txt").expect("File delete failed");
 
         create_conf_file().unwrap();
         println!("Customed Configuration File updated");
     } else if rs == false
-        && (interface_name != "eth0" || *tipo != false || *timeout != 10 || *filename != "report")
+        && (*interface_name != "" || *tipo != false || *timeout != 10 || *filename != "report")
     {
         fs::remove_file("ConfigurationFile.txt").expect("File delete failed");
         create_conf_file().unwrap();
@@ -91,8 +92,10 @@ pub fn check_file(interface_name: &String, tipo: &bool, timeout: &i64, filename:
 }
 
 pub fn create_conf_file() -> std::io::Result<()> {
+    let interfaces = Device::list().unwrap();
     let args = Args::parse();
     let interfaccia = format!("{}\n", args.interface);
+    let interfaccia_standard =format!("{}\n",interfaces.first().unwrap().clone().name);
     let tempo = format!("{}\n", args.timeout);
     let nome = format!("{}\n", args.reportname);
     let tipo = match args.acsv {
@@ -100,7 +103,13 @@ pub fn create_conf_file() -> std::io::Result<()> {
         false => "0",
     };
     let mut f = File::create("ConfigurationFile.txt")?;
-    f.write_all(interfaccia.as_bytes())?;
+    println!("{},{},{},{}", interfaccia_standard,tempo,nome,tipo);
+    if args.interface == "" {
+    f.write_all(interfaccia_standard.as_bytes()).unwrap();
+    }
+    else {
+    f.write_all(interfaccia.as_bytes()).unwrap();
+    }
     f.write_all(tempo.as_bytes())?;
     f.write_all(nome.as_bytes())?;
     f.write_all(tipo.as_bytes())?;

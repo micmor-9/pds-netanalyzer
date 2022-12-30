@@ -10,7 +10,7 @@ pub struct Args {
     #[arg(short, long, default_value = "report")]
     pub reportname: String,
 
-    #[arg(short, long, default_value = "eth0")]
+    #[arg(short, long, default_value = "")]
     pub interface: String,
 
     // view the interfaces without start the sniffing
