@@ -15,7 +15,7 @@ pub struct Settings {
 }
 impl Settings {
     pub fn new() -> Self {
-        if let Ok(lines) = read_lines("./ConfigurationFile.txt") {
+        if let Ok(lines) = read_lines("./ConfigurationFile.txt") {            
             let mut vec = vec![];
             // Consumes the iterator, returns an (Optional) String
             for line in lines {
@@ -23,6 +23,7 @@ impl Settings {
                     vec.push(info.to_string());
                 }
             }
+            println!("{:?}" ,vec);
             let mut tipo = true;
             if vec[3] == "1" {
                 tipo = true;
@@ -56,15 +57,16 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-pub fn check_file(interface_name: &String, tipo: &bool, timeout: &i64, filename: &String) -> () {
+pub fn check_file(interface_name: &String, tipo: &bool, timeout: &i64, filename: &String) -> Settings {
     let rs = Path::new("ConfigurationFile.txt").exists();
+
     if rs == true
         && *interface_name == ""
         && *tipo == false
         && *timeout == 10
         && *filename == "report"
     {
-        println!(" Configuration File exsist ");
+        println!(" Configuration File exists ");
     } else if rs == false
         && *interface_name == ""
         && *tipo == false
@@ -77,18 +79,16 @@ pub fn check_file(interface_name: &String, tipo: &bool, timeout: &i64, filename:
         && (*interface_name != "" || *tipo != false || *timeout != 10 || *filename != "report")
     {
         fs::remove_file("ConfigurationFile.txt").expect("File delete failed");
-
         create_conf_file().unwrap();
-        println!("Customed Configuration File updated");
+        println!("Customized Configuration File updated");
     } else if rs == false
         && (*interface_name != "" || *tipo != false || *timeout != 10 || *filename != "report")
     {
-        fs::remove_file("ConfigurationFile.txt").expect("File delete failed");
         create_conf_file().unwrap();
-        println!("Customed Configuration File created");
+        println!("Customized Configuration File created");
     }
     let set = Settings::new();
-    println!("{:?}", set);
+    return set;
 }
 
 pub fn create_conf_file() -> std::io::Result<()> {

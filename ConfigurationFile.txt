@@ -1,4 +1,4 @@
-a
-20
+eth0
+10
 report
 0

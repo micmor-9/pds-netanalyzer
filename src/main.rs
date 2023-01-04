@@ -37,8 +37,7 @@ fn main() {
     // TODO: Select correct interface
     let interface = interfaces.first().unwrap().clone();
     let interface_bis = interface.clone();
-
-    check_file(&interface_name, &tipo, &timeout, &filename);
+    let set = check_file(&interface_name, &tipo, &timeout, &filename);
 
     //Set up pcap capture in promisc mode
     let mut capture = Capture::from_device(interface)
