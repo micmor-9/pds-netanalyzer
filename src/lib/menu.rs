@@ -305,7 +305,11 @@ pub fn print_menu(
     let interface = args.interface;
     let timeout = args.timeout;
     let file_name = args.reportname;
-    let tipo = args.acsv;
+    let tipo = match args.output_type.as_str() {
+        "csv" => true,
+        "txt" => false,
+        _ => false
+    };
 
     if list_mode && interface_name == "eth0".to_string() {
         println!("\n{}", "THE AVAILABLE NET INTERFACE ARE".bold().green());

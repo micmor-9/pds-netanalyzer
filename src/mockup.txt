@@ -18,5 +18,10 @@ idee da discutere con gli altri:
   sia memorizzato nulla si fa partire direttamente lo sniffing su tale interfaccia
 
 Nuovo
-aggiugnere struct filtri a settings, aggiungere filtri a conf file e leggerli, modificare le impostazioni di sniffing
-  leggendo dalla struct settings completa, aggiustare i check del menu, selezionare interfaccia sniffing, aggiustare
+- aggiugnere struct filtri a settings, aggiungere filtri a conf file e leggerli,
+- modificare le impostazioni di sniffing leggendo dalla struct settings completa, 
+- aggiustare i check del menu, 
+- selezionare interfaccia sniffing
+- aggiustare cambio txt e csv da args, 
+- eliminare stampa doppia nomi colonne csv
+- aggiornare lista menu con comandi corretti

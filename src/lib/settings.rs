@@ -12,6 +12,7 @@ pub struct Settings {
     pub csv: Option<bool>,
     pub timeout: Option<i64>,
     pub filename: Option<String>,
+    // TODO: aggiungere filtri
 }
 impl Settings {
     pub fn new() -> Self {
@@ -25,9 +26,9 @@ impl Settings {
             }
             println!("{:?}" ,vec);
             let mut tipo = true;
-            if vec[3] == "1" {
+            if vec[3] == "csv" {
                 tipo = true;
-            } else if vec[3] == "0" {
+            } else if vec[3] == "txt" {
                 tipo = false;
             }
             println!("{}", vec[2]);
@@ -98,9 +99,10 @@ pub fn create_conf_file() -> std::io::Result<()> {
     let interfaccia_standard =format!("{}\n",interfaces.first().unwrap().clone().name);
     let tempo = format!("{}\n", args.timeout);
     let nome = format!("{}\n", args.reportname);
-    let tipo = match args.acsv {
-        true => "1",
-        false => "0",
+    let tipo = match args.output_type.as_str() {
+        "csv" => "1",
+        "txt" => "0",
+        _ => "0"
     };
     let mut f = File::create("ConfigurationFile.txt")?;
     println!("{},{},{},{}", interfaccia_standard,tempo,nome,tipo);
