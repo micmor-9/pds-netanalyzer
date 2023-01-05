@@ -355,16 +355,14 @@ pub fn print_menu(
             "\t-i, --interface\t\tName of the interface to be used for the sniffing".red()
         );
         eprintln!("{}", "\t-l, --list:\t\tShow the net interfaces present in the system without launching the sniffing".red());
-        eprintln!("{}", "\t-c, --commands\t\tShow all possible commands".red());
+        
         eprintln!(
             "{}",
             "\t-f, --filters: \t\tSet the filters for the sniffing".red()
         );
+        eprintln!("\n{}", "\t-c, --commands\t\tShow all possible commands".red());
 
-        eprintln!(
-            "\n{}",
-            "If you want to create a default configuration file press Y "
-        );
+        eprintln!("\n{}","If you want to create a default configuration file press (Y/y): ".bold());
 
         let mut buf = String::new();
         buf.clear();
@@ -376,6 +374,7 @@ pub fn print_menu(
             }
             _ => {}
         }
+        println!("");
 
         process::exit(0);
     }
@@ -403,7 +402,7 @@ pub fn print_menu(
             "{0: <2}  {1: <10}  {2: <10}",
             "4.",
             "Set report file name",
-            "\t\t\t-- -n ".bold().green()
+            "\t\t\t-- -r ".bold().green()
         );
         println!(
             "{0: <2}  {1: <10}  {2: <10}",
@@ -414,8 +413,8 @@ pub fn print_menu(
         println!(
             "{0: <2}  {1: <10}  {2: <10}",
             "6.",
-            "Set report file type to csv",
-            "\t\t-- -c\n".bold().green()
+            "Set report file type",
+            "\t\t-- -o <csv/txt>".bold().green()
         );
         process::exit(0);
     }
