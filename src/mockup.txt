@@ -18,10 +18,10 @@ idee da discutere con gli altri:
   sia memorizzato nulla si fa partire direttamente lo sniffing su tale interfaccia
 
 Nuovo
-- aggiugnere struct filtri a settings, aggiungere filtri a conf file e leggerli,
-- modificare le impostazioni di sniffing leggendo dalla struct settings completa, 
-- aggiustare i check del menu, 
-- selezionare interfaccia sniffing
-- aggiustare cambio txt e csv da args, 
-- eliminare stampa doppia nomi colonne csv
-- aggiornare lista menu con comandi corretti
+- aggiugnere struct filtri a settings, aggiungere filtri a conf file e leggerli -> rob
+- modificare le impostazioni di sniffing leggendo dalla struct settings completa -> micm
+- aggiustare i check del menu -> rob micg
+- selezionare interfaccia sniffing -> micm
+- aggiustare cambio txt e csv da args -> rob
+- eliminare stampa doppia nomi colonne csv -> micm
+- aggiornare lista menu con comandi corretti -> micg
