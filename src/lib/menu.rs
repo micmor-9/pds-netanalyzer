@@ -389,7 +389,7 @@ pub fn print_menu(
             "{0: <2}  {1: <10}  {2: <10}",
             "4.",
             "Set report file name",
-            "\t\t\t-- -r ".bold().green()
+            "\t\t\t-- -r <filename>".bold().green()
         );
         println!(
             "{0: <2}  {1: <10}  {2: <10}",
