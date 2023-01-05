@@ -401,7 +401,7 @@ pub fn print_menu(
             "{0: <2}  {1: <10}  {2: <10}",
             "6.",
             "Set timeout",
-            "\t\t\t\t-- -t <value (in ms)>\n".bold().green()
+            "\t\t\t\t-- -t <value (in s)>\n".bold().green()
         );
         
         process::exit(0);
