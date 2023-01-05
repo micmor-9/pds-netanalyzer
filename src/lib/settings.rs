@@ -1,5 +1,6 @@
 use crate::args::Args;
 use clap::Parser;
+use colored::*;
 use pcap::Device;
 use std::fs::{self, File};
 use std::io::BufRead;
@@ -12,10 +13,11 @@ pub struct Settings {
     pub csv: Option<bool>,
     pub timeout: Option<i64>,
     pub filename: Option<String>,
+    // TODO: aggiungere filtri
 }
 impl Settings {
     pub fn new() -> Self {
-        if let Ok(lines) = read_lines("./ConfigurationFile.txt") {            
+        if let Ok(lines) = read_lines("./ConfigurationFile.txt") {
             let mut vec = vec![];
             // Consumes the iterator, returns an (Optional) String
             for line in lines {
@@ -25,9 +27,9 @@ impl Settings {
             }
             println!("{:?}" ,vec);
             let mut tipo = true;
-            if vec[3] == "1" {
+            if vec[3] == "csv" {
                 tipo = true;
-            } else if vec[3] == "0" {
+            } else if vec[3] == "txt" {
                 tipo = false;
             }
             println!("{}", vec[2]);
@@ -99,9 +101,10 @@ pub fn create_conf_file() -> std::io::Result<()> {
     let interfaccia_standard =format!("{}\n",interfaces.first().unwrap().clone().name);
     let tempo = format!("{}\n", args.timeout);
     let nome = format!("{}\n", args.reportname);
-    let tipo = match args.acsv {
-        true => "1",
-        false => "0",
+    let tipo = match args.output_type.as_str() {
+        "csv" => "1",
+        "txt" => "0",
+        _ => "0"
     };
     let mut f = File::create("ConfigurationFile.txt")?;
     println!("{},{},{},{}", interfaccia_standard,tempo,nome,tipo);
@@ -116,4 +119,20 @@ pub fn create_conf_file() -> std::io::Result<()> {
     f.write_all(tipo.as_bytes())?;
     Ok(())
     //.to_string() + b"{}\n", args.csv +b"{}\n",args.timeout + b"{}\n", args.filename)?;
+}
+
+pub fn read_conf_file() -> String {
+    let err_msg = "Error reading from file <ConfigurationFile.txt".red();
+
+    let rs = Path::new("ConfigurationFile.txt").exists();
+
+    if rs {
+        let contents = fs::read_to_string("ConfigurationFile.txt").expect(&err_msg);
+
+        let interface = contents.split_whitespace().next().unwrap_or("");
+        return interface.to_string();
+    } else {
+        return "nu cazzu".to_string();
+    }
+
 }

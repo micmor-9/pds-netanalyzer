@@ -288,26 +288,55 @@ pub fn print_menu(
     let interface = args.interface;
     let timeout = args.timeout;
     let file_name = args.reportname;
+<<<<<<< HEAD
     let tipo = args.acsv;
     let mut option = _option.clone();
     let mut filters = _filters.clone();
+=======
+    let tipo = match args.output_type.as_str() {
+        "csv" => true,
+        "txt" => false,
+        _ => false
+    };
+
+    if list_mode && interface_name == "en0".to_string() {
+        println!("\n{}", "THE AVAILABLE NET INTERFACE ARE".bold().green());
+        println!("\n{0: <10} | {1: <20}", "Name", "Status");
+        println!("--------------------------");
+        interfaces.into_iter().for_each(|i| {
+            println!(
+                "{0: <10} | {1: <20}",
+                i.name.green(),
+                i.desc.unwrap_or("Available".to_string())
+            )
+        });
+        println!("\n");
+        process::exit(0);
+    }
+>>>>>>> dev
     if !list_mode && !option && !filters && !Path::new("./ConfigurationFile.txt").exists() {
         // TODO -> first af all search for a configuration file and then ask to choose the parameters
-        eprintln!("\n{}", "No configuration file found".bold().red());
+        eprintln!("\n{}", "No configuration file found\n".bold().red());
+
         eprintln!(
             "{}",
             "\t-i, --interface\t\tName of the interface to be used for the sniffing".red()
         );
-        eprintln!("{}", "\t-l, --list:\t\tShow the net interfaces present in the system without launching the sniffing".red());
-        eprintln!("{}", "\t-c, --commands\t\tShow all possible commands".red());
+
+        eprintln!("{}", 
+        "\t-l, --list:\t\tShow the net interfaces present in the system without launching the sniffing".red()
+        );
+
         eprintln!(
             "{}",
             "\t-f, --filters: \t\tSet the filters for the sniffing".red()
         );
 
-        eprintln!(
-            "\n{}",
-            "If you want to create a default configuration file press Y "
+        eprintln!("\n{}", "\t-c, --commands\t\tShow all possible commands".red());
+
+        eprint!(
+            "\n\t{}",
+            "If you want to create a default configuration file press Yes (Y/y): ".bold()
         );
 
         let mut buf = String::new();
@@ -321,6 +350,7 @@ pub fn print_menu(
             _ => {}
         }
 
+<<<<<<< HEAD
         
     }
 while (list_mode || filters || option) == true{
@@ -337,6 +367,10 @@ while (list_mode || filters || option) == true{
             )
         });
         println!("\n");
+=======
+        println!("");
+
+>>>>>>> dev
         process::exit(0);
     }
     if option {
@@ -363,20 +397,21 @@ while (list_mode || filters || option) == true{
             "{0: <2}  {1: <10}  {2: <10}",
             "4.",
             "Set report file name",
-            "\t\t\t-- -n ".bold().green()
+            "\t\t\t-- -r ".bold().green()
         );
         println!(
             "{0: <2}  {1: <10}  {2: <10}",
             "5.",
-            "Set report file type to txt",
-            "\t\t-- -t".bold().green()
+            "Set report file type",
+            "\t\t\t-- -o <csv/txt>".bold().green()
         );
         println!(
             "{0: <2}  {1: <10}  {2: <10}",
             "6.",
-            "Set report file type to csv",
-            "\t\t-- -c\n".bold().green()
+            "Set timeout",
+            "\t\t\t\t-- -t <value (in ms)>\n".bold().green()
         );
+        
         process::exit(0);
     }
 
