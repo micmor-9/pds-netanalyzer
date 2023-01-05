@@ -10,23 +10,6 @@ use std::process;
 use colored::Colorize;
 
 #[derive(Debug)]
-pub struct Settings {
-    pub filters: String,
-    pub csv: Option<bool>,
-    pub timeout: Option<i64>,
-    pub filename: Option<String>,
-}
-impl Settings {
-    pub fn new() -> Self {
-        return Settings {
-            filters: String::new(),
-            csv: None,
-            timeout: None,
-            filename: None,
-        };
-    }
-}
-
 pub struct Filter {
     pub ip_source: String,
     pub ip_destination: String,
@@ -72,7 +55,7 @@ pub fn filter_list() -> () {
     println!("0. \t Back to menu\n");
 }
 
-pub fn print_filters() -> Filter {
+pub fn print_filters() -> Option<Filter> {
     let args = Args::parse();
     // let mut conditional_settings = Vec::<String>::new();
 
@@ -128,13 +111,13 @@ pub fn print_filters() -> Filter {
                     let destination_port_ret = destination_port.join(" or ");
                     let transport_protocol_ret = transport_protocol.join(" or ");
 
-                    return Filter::with_args(
+                    return Some(Filter::with_args(
                         ip_source_ret,
                         ip_destination_ret,
                         source_port_ret,
                         destination_port_ret,
                         transport_protocol_ret,
-                    );
+                    ));
                 }
                 _ => {
                     println!("\n{}", "Wrong command.".red());
@@ -142,7 +125,7 @@ pub fn print_filters() -> Filter {
             }
         }
     }
-    return Filter::new();
+    return None;
 }
 
 pub fn filter_transport_protocol() -> String {
@@ -297,30 +280,17 @@ pub fn check_validity_ipv6(splitted_ip: &Vec<&str>) -> bool {
 pub fn print_menu(
     interface_name: String,
     list_mode: bool,
-    option: bool,
+    _option: bool,
     interfaces: Vec<Device>,
-    filters: bool,
+    _filters: bool,
 ) {
     let args = Args::parse();
     let interface = args.interface;
     let timeout = args.timeout;
     let file_name = args.reportname;
     let tipo = args.acsv;
-
-    if list_mode && interface_name == "eth0".to_string() {
-        println!("\n{}", "THE AVAILABLE NET INTERFACE ARE".bold().green());
-        println!("\n{0: <10} | {1: <20}", "Name", "Status");
-        println!("--------------------------");
-        interfaces.into_iter().for_each(|i| {
-            println!(
-                "{0: <10} | {1: <20}",
-                i.name.green(),
-                i.desc.unwrap_or("Available".to_string())
-            )
-        });
-        println!("\n");
-        process::exit(0);
-    }
+    let mut option = _option.clone();
+    let mut filters = _filters.clone();
     if !list_mode && !option && !filters && !Path::new("./ConfigurationFile.txt").exists() {
         // TODO -> first af all search for a configuration file and then ask to choose the parameters
         eprintln!("\n{}", "No configuration file found".bold().red());
@@ -351,6 +321,22 @@ pub fn print_menu(
             _ => {}
         }
 
+        
+    }
+while (list_mode || filters || option) == true{
+    
+    if list_mode && interface_name == "eth0".to_string() {
+        println!("\n{}", "THE AVAILABLE NET INTERFACE ARE".bold().green());
+        println!("\n{0: <10} | {1: <20}", "Name", "Status");
+        println!("--------------------------");
+        interfaces.into_iter().for_each(|i| {
+            println!(
+                "{0: <10} | {1: <20}",
+                i.name.green(),
+                i.desc.unwrap_or("Available".to_string())
+            )
+        });
+        println!("\n");
         process::exit(0);
     }
     if option {
@@ -396,5 +382,11 @@ pub fn print_menu(
 
     if filters {
         let _settings = print_filters();
+        if _settings.is_some()  {
+            filters = false;
+            option = true;
+            println!("a");
+        }
     }
+}
 }

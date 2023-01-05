@@ -57,6 +57,7 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
+
 pub fn check_file(interface_name: &String, tipo: &bool, timeout: &i64, filename: &String) -> Settings {
     let rs = Path::new("ConfigurationFile.txt").exists();
 
