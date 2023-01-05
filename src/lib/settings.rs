@@ -1,8 +1,8 @@
 use crate::args::Args;
+use crate::menu::Filter;
 use clap::Parser;
-use colored::*;
 use pcap::Device;
-use std::fs::{self, File};
+use std::fs::{self, File, OpenOptions};
 use std::io::BufRead;
 use std::io::{self, Write};
 use std::path::Path;
@@ -13,11 +13,11 @@ pub struct Settings {
     pub csv: Option<bool>,
     pub timeout: Option<i64>,
     pub filename: Option<String>,
-    // TODO: aggiungere filtri
+    pub filters: Option<Filter>,
 }
 impl Settings {
     pub fn new() -> Self {
-        if let Ok(lines) = read_lines("./ConfigurationFile.txt") {
+        if let Ok(lines) = read_lines("./ConfigurationFile.txt") {            
             let mut vec = vec![];
             // Consumes the iterator, returns an (Optional) String
             for line in lines {
@@ -25,11 +25,11 @@ impl Settings {
                     vec.push(info.to_string());
                 }
             }
-            println!("{:?}" ,vec);
+            let filter = Filter::with_args(vec[4].to_string(),vec[5].to_string(),vec[6].to_string(), vec[7].to_string(),vec[8].to_string());
             let mut tipo = true;
             if vec[3] == "csv" {
                 tipo = true;
-            } else if vec[3] == "txt" {
+            } else if vec[3] == "txt" {            
                 tipo = false;
             }
             println!("{}", vec[2]);
@@ -39,6 +39,7 @@ impl Settings {
                 csv: Some(tipo),
                 timeout: Some(timeoutint),
                 filename: Some(vec[2].to_string()),
+                filters: Some(filter),
             };
         } else {
             return Settings {
@@ -46,6 +47,7 @@ impl Settings {
                 csv: None,
                 timeout: None,
                 filename: None,
+                filters: None,
             };
         }
     }
@@ -59,8 +61,9 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-
 pub fn check_file(interface_name: &String, tipo: &bool, timeout: &i64, filename: &String) -> Settings {
+    let args = Args::parse();
+    let tipologia = args.output_type;
     let rs = Path::new("ConfigurationFile.txt").exists();
 
     if rs == true
@@ -68,6 +71,7 @@ pub fn check_file(interface_name: &String, tipo: &bool, timeout: &i64, filename:
         && *tipo == false
         && *timeout == 10
         && *filename == "report"
+        && tipologia == ""
     {
         println!(" Configuration File exists ");
     } else if rs == false
@@ -77,9 +81,21 @@ pub fn check_file(interface_name: &String, tipo: &bool, timeout: &i64, filename:
         && *filename == "report"
     {
         create_conf_file().unwrap();
+        let f2 = Filter::new();
+    let mut file = OpenOptions::new()
+                    .write(true)
+                    .append(true)
+                    .open("ConfigurationFile.txt")
+                    .unwrap();
+                    file.write_all(format!("{}\n", f2.ip_source).as_bytes()).unwrap();
+                    file.write_all(format!("{}\n", f2.ip_destination).as_bytes()).unwrap();
+                    file.write_all(format!("{}\n", f2.source_port).as_bytes()).unwrap();
+                    file.write_all(format!("{}\n", f2.destination_port).as_bytes()).unwrap();
+                    file.write_all(format!("{}\n", f2.transport_protocol).as_bytes()).unwrap();
+                    
         println!("Default Configuration File created with default configs");
     } else if rs == true
-        && (*interface_name != "" || *tipo != false || *timeout != 10 || *filename != "report")
+        && (*interface_name != "" || *tipo != false || *timeout != 10 || *filename != "report" || tipologia == "txt")
     {
         fs::remove_file("ConfigurationFile.txt").expect("File delete failed");
         create_conf_file().unwrap();
@@ -101,11 +117,11 @@ pub fn create_conf_file() -> std::io::Result<()> {
     let interfaccia_standard =format!("{}\n",interfaces.first().unwrap().clone().name);
     let tempo = format!("{}\n", args.timeout);
     let nome = format!("{}\n", args.reportname);
-    let tipo = match args.output_type.as_str() {
+    let tipo = format!("{}\n",match args.output_type.as_str() {
         "csv" => "1",
         "txt" => "0",
         _ => "0"
-    };
+    });
     let mut f = File::create("ConfigurationFile.txt")?;
     println!("{},{},{},{}", interfaccia_standard,tempo,nome,tipo);
     if args.interface == "" {
@@ -121,18 +137,5 @@ pub fn create_conf_file() -> std::io::Result<()> {
     //.to_string() + b"{}\n", args.csv +b"{}\n",args.timeout + b"{}\n", args.filename)?;
 }
 
-pub fn read_conf_file() -> String {
-    let err_msg = "Error reading from file <ConfigurationFile.txt".red();
 
-    let rs = Path::new("ConfigurationFile.txt").exists();
 
-    if rs {
-        let contents = fs::read_to_string("ConfigurationFile.txt").expect(&err_msg);
-
-        let interface = contents.split_whitespace().next().unwrap_or("");
-        return interface.to_string();
-    } else {
-        return "nu cazzu".to_string();
-    }
-
-}

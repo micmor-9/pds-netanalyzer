@@ -1,4 +1,7 @@
-use std::io;
+
+
+use std::fs::{File, OpenOptions};
+use std::io::{self, Write, Seek, SeekFrom};
 
 use crate::args::Args;
 use crate::settings::check_file;
@@ -10,6 +13,7 @@ use std::process;
 use colored::Colorize;
 
 #[derive(Debug)]
+
 pub struct Filter {
     pub ip_source: String,
     pub ip_destination: String,
@@ -55,7 +59,7 @@ pub fn filter_list() -> () {
     println!("0. \t Back to menu\n");
 }
 
-pub fn print_filters() -> Option<Filter> {
+pub fn print_filters() -> Filter {
     let args = Args::parse();
     // let mut conditional_settings = Vec::<String>::new();
 
@@ -110,14 +114,27 @@ pub fn print_filters() -> Option<Filter> {
                     let source_port_ret = source_port.join(" or ");
                     let destination_port_ret = destination_port.join(" or ");
                     let transport_protocol_ret = transport_protocol.join(" or ");
-
-                    return Some(Filter::with_args(
+                    let f = Filter::with_args(
                         ip_source_ret,
                         ip_destination_ret,
                         source_port_ret,
                         destination_port_ret,
                         transport_protocol_ret,
-                    ));
+                    );
+                    let mut file = OpenOptions::new()
+                    .truncate(false)
+                    .write(true)
+                    .append(false)
+                    .open("ConfigurationFile.txt")
+                    .unwrap();
+                    file.seek(SeekFrom::Start(19)).unwrap();
+                    file.write_all(format!("{}\n", f.ip_source).as_bytes()).unwrap();
+                    file.write_all(format!("{}\n", f.ip_destination).as_bytes()).unwrap();
+                    file.write_all(format!("{}\n", f.source_port).as_bytes()).unwrap();
+                    file.write_all(format!("{}\n", f.destination_port).as_bytes()).unwrap();
+                    file.write_all(format!("{}\n", f.transport_protocol).as_bytes()).unwrap();
+                    return f 
+                    
                 }
                 _ => {
                     println!("\n{}", "Wrong command.".red());
@@ -125,8 +142,30 @@ pub fn print_filters() -> Option<Filter> {
             }
         }
     }
-    return None;
+    let f2 = Filter::new();
+    let mut file = OpenOptions::new()
+                    .write(true)
+                    .append(true)
+                    .open("ConfigurationFile.txt")
+                    .unwrap();
+                    file.write_all(format!("{}\n", f2.ip_source).as_bytes()).unwrap();
+                    file.write_all(format!("{}\n", f2.ip_destination).as_bytes()).unwrap();
+                    file.write_all(format!("{}\n", f2.source_port).as_bytes()).unwrap();
+                    file.write_all(format!("{}\n", f2.destination_port).as_bytes()).unwrap();
+                    file.write_all(format!("{}\n", f2.transport_protocol).as_bytes()).unwrap();
+                    return f2;
 }
+
+/*pub fn write_on_file (f:Filter) -> std::io::Result<()> {
+    let mut file = File::open("ConfigurationFile.txt")?;
+    /*file.write_all(format!("{}\n", f.ip_source).as_bytes()).unwrap();
+    file.write_all(format!("{}\n", f.ip_destination).as_bytes()).unwrap();
+    file.write_all(format!("{}\n", f.source_port).as_bytes()).unwrap();
+    file.write_all(format!("{}\n", f.destination_port).as_bytes()).unwrap();
+    file.write_all(format!("{}\n", f.transport_protocol).as_bytes()).unwrap();*/
+    writeln!(file,"{}",f.ip_source);
+    Ok(())
+} */
 
 pub fn filter_transport_protocol() -> String {
     let mut transport_protocol = String::new();
@@ -280,26 +319,21 @@ pub fn check_validity_ipv6(splitted_ip: &Vec<&str>) -> bool {
 pub fn print_menu(
     interface_name: String,
     list_mode: bool,
-    _option: bool,
+    option: bool,
     interfaces: Vec<Device>,
-    _filters: bool,
+    filters: bool,
 ) {
     let args = Args::parse();
     let interface = args.interface;
     let timeout = args.timeout;
     let file_name = args.reportname;
-<<<<<<< HEAD
-    let tipo = args.acsv;
-    let mut option = _option.clone();
-    let mut filters = _filters.clone();
-=======
     let tipo = match args.output_type.as_str() {
         "csv" => true,
         "txt" => false,
         _ => false
     };
 
-    if list_mode && interface_name == "en0".to_string() {
+    if list_mode && interface_name == "eth0".to_string() {
         println!("\n{}", "THE AVAILABLE NET INTERFACE ARE".bold().green());
         println!("\n{0: <10} | {1: <20}", "Name", "Status");
         println!("--------------------------");
@@ -313,30 +347,23 @@ pub fn print_menu(
         println!("\n");
         process::exit(0);
     }
->>>>>>> dev
     if !list_mode && !option && !filters && !Path::new("./ConfigurationFile.txt").exists() {
         // TODO -> first af all search for a configuration file and then ask to choose the parameters
-        eprintln!("\n{}", "No configuration file found\n".bold().red());
-
+        eprintln!("\n{}", "No configuration file found".bold().red());
         eprintln!(
             "{}",
             "\t-i, --interface\t\tName of the interface to be used for the sniffing".red()
         );
-
-        eprintln!("{}", 
-        "\t-l, --list:\t\tShow the net interfaces present in the system without launching the sniffing".red()
-        );
-
+        eprintln!("{}", "\t-l, --list:\t\tShow the net interfaces present in the system without launching the sniffing".red());
+        eprintln!("{}", "\t-c, --commands\t\tShow all possible commands".red());
         eprintln!(
             "{}",
             "\t-f, --filters: \t\tSet the filters for the sniffing".red()
         );
 
-        eprintln!("\n{}", "\t-c, --commands\t\tShow all possible commands".red());
-
-        eprint!(
-            "\n\t{}",
-            "If you want to create a default configuration file press Yes (Y/y): ".bold()
+        eprintln!(
+            "\n{}",
+            "If you want to create a default configuration file press Y "
         );
 
         let mut buf = String::new();
@@ -350,27 +377,6 @@ pub fn print_menu(
             _ => {}
         }
 
-<<<<<<< HEAD
-        
-    }
-while (list_mode || filters || option) == true{
-    
-    if list_mode && interface_name == "eth0".to_string() {
-        println!("\n{}", "THE AVAILABLE NET INTERFACE ARE".bold().green());
-        println!("\n{0: <10} | {1: <20}", "Name", "Status");
-        println!("--------------------------");
-        interfaces.into_iter().for_each(|i| {
-            println!(
-                "{0: <10} | {1: <20}",
-                i.name.green(),
-                i.desc.unwrap_or("Available".to_string())
-            )
-        });
-        println!("\n");
-=======
-        println!("");
-
->>>>>>> dev
         process::exit(0);
     }
     if option {
@@ -397,31 +403,24 @@ while (list_mode || filters || option) == true{
             "{0: <2}  {1: <10}  {2: <10}",
             "4.",
             "Set report file name",
-            "\t\t\t-- -r ".bold().green()
+            "\t\t\t-- -n ".bold().green()
         );
         println!(
             "{0: <2}  {1: <10}  {2: <10}",
             "5.",
-            "Set report file type",
-            "\t\t\t-- -o <csv/txt>".bold().green()
+            "Set report file type to txt",
+            "\t\t-- -t".bold().green()
         );
         println!(
             "{0: <2}  {1: <10}  {2: <10}",
             "6.",
-            "Set timeout",
-            "\t\t\t\t-- -t <value (in ms)>\n".bold().green()
+            "Set report file type to csv",
+            "\t\t-- -c\n".bold().green()
         );
-        
         process::exit(0);
     }
 
     if filters {
         let _settings = print_filters();
-        if _settings.is_some()  {
-            filters = false;
-            option = true;
-            println!("a");
-        }
     }
-}
 }
