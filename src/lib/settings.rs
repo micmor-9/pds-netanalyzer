@@ -24,14 +24,12 @@ impl Settings {
                     vec.push(info.to_string());
                 }
             }
-            println!("{:?}" ,vec);
             let mut tipo = true;
             if vec[3] == "csv" {
                 tipo = true;
             } else if vec[3] == "txt" {
                 tipo = false;
             }
-            println!("{}", vec[2]);
             let timeoutint: i64 = vec[1].parse().unwrap();
             return Settings {
                 interface: Some(vec[0].to_string()),
@@ -105,7 +103,6 @@ pub fn create_conf_file() -> std::io::Result<()> {
         _ => "0"
     };
     let mut f = File::create("ConfigurationFile.txt")?;
-    println!("{},{},{},{}", interfaccia_standard,tempo,nome,tipo);
     if args.interface == "" {
     f.write_all(interfaccia_standard.as_bytes()).unwrap();
     }
@@ -116,5 +113,4 @@ pub fn create_conf_file() -> std::io::Result<()> {
     f.write_all(nome.as_bytes())?;
     f.write_all(tipo.as_bytes())?;
     Ok(())
-    //.to_string() + b"{}\n", args.csv +b"{}\n",args.timeout + b"{}\n", args.filename)?;
 }
