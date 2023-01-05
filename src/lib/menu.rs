@@ -305,7 +305,11 @@ pub fn print_menu(
     let interface = args.interface;
     let timeout = args.timeout;
     let file_name = args.reportname;
-    let tipo = args.acsv;
+    let tipo = match args.output_type.as_str() {
+        "csv" => true,
+        "txt" => false,
+        _ => false
+    };
 
     if list_mode && interface_name == "en0".to_string() {
         println!("\n{}", "THE AVAILABLE NET INTERFACE ARE".bold().green());
@@ -383,26 +387,21 @@ pub fn print_menu(
             "{0: <2}  {1: <10}  {2: <10}",
             "4.",
             "Set report file name",
-            "\t\t\t-- -n ".bold().green()
+            "\t\t\t-- -r ".bold().green()
         );
         println!(
             "{0: <2}  {1: <10}  {2: <10}",
             "5.",
-            "Set report file type to txt",
-            "\t\t-- -t".bold().green()
+            "Set report file type",
+            "\t\t\t-- -o <csv/txt>".bold().green()
         );
         println!(
             "{0: <2}  {1: <10}  {2: <10}",
             "6.",
-            "Set report file type to csv",
-            "\t\t-- -c".bold().green()
-        );
-        println!(
-            "{0: <2}  {1: <10}  {2: <10}",
-            "7.",
             "Set timeout",
             "\t\t\t\t-- -t <value (in ms)>\n".bold().green()
         );
+        
         process::exit(0);
     }
 

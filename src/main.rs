@@ -31,25 +31,21 @@ fn main() {
     let inter = interface_name.clone();
     print_menu(inter, list_mode, option, interface, filters);
 
-    let tipe = args.acsv;
+    let tipo = match args.output_type.as_str() {
+        "csv" => true,
+        "txt" => false,
+        _ => false
+    };
     let timeout = args.timeout;
     let filename = args.reportname;
 
     let interfaces = Device::list().unwrap();
 
-    // Select correct interface
-    let interface = interfaces
-        .into_iter()
-        .filter(|i| i.name == interface_name)
-        .next()
-        .unwrap_or_else(|| {
-            eprintln!("{}", "No such network interface: {}".red());
-            process::exit(1);
-        });
-
+    // Select first interface available temporarly to start sniffing
+    // TODO: Select correct interface
+    let set = check_file(&interface_name, &tipo, &timeout, &filename);
+    let interface = interfaces.first().unwrap().clone();
     let interface_bis = interface.clone();
-    
-    check_file(&interface_name, &tipe, &timeout, &filename);
 
     //Set up pcap capture in promisc mode
     let mut capture = Capture::from_device(interface)
@@ -195,7 +191,7 @@ fn main() {
             }
 
             index += 1;
-            let mut report_handle = ReportWriter::new(tipe, &filename.as_str(), index);
+            let mut report_handle = ReportWriter::new(set.csv.unwrap(), &filename.as_str(), index);
             report_handle.init_report();
 
             for packet in queue {

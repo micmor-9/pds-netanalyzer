@@ -16,3 +16,12 @@ idee da discutere con gli altri:
   quale interfaccia voler applicare tali filtri. 
 - Se invece si fa partire lo sniffer direttamente con l'interfaccia senza che nel file ci 
   sia memorizzato nulla si fa partire direttamente lo sniffing su tale interfaccia
+
+Nuovo
+- aggiugnere struct filtri a settings, aggiungere filtri a conf file e leggerli -> rob
+- modificare le impostazioni di sniffing leggendo dalla struct settings completa -> micm
+- aggiustare i check del menu -> rob micg
+- selezionare interfaccia sniffing -> micm
+- aggiustare cambio txt e csv da args -> rob
+- eliminare stampa doppia nomi colonne csv -> micm
+- aggiornare lista menu con comandi corretti -> micg

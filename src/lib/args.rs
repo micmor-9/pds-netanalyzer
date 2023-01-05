@@ -25,6 +25,6 @@ pub struct Args {
     #[arg(short, long, action, default_value = "false")]
     pub filters: bool,
 
-    #[arg(short, long, action)]
-    pub acsv: bool,
+    #[arg(short, long, action, default_value = "")]
+    pub output_type: String,
 }
