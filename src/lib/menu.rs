@@ -338,12 +338,12 @@ pub fn print_menu(
         "\t-l, --list:\t\tShow the net interfaces present in the system without launching the sniffing".red()
         );
 
-        eprintln!("{}", "\t-c, --commands\t\tShow all possible commands".red());
-
         eprintln!(
             "{}",
             "\t-f, --filters: \t\tSet the filters for the sniffing".red()
         );
+
+        eprintln!("\n{}", "\t-c, --commands\t\tShow all possible commands".red());
 
         eprint!(
             "\n\t{}",
@@ -360,6 +360,8 @@ pub fn print_menu(
             }
             _ => {}
         }
+
+        println!("");
 
         process::exit(0);
     }
