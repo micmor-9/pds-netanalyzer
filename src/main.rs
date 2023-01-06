@@ -2,26 +2,22 @@ use clap::Parser;
 use colored::*;
 use netanalyzer::error::ParserError;
 use pcap::{Capture, Device};
+use std::{io, process};
 use std::io::Write;
 use std::sync::mpsc::channel;
 use std::sync::{Arc, Mutex, RwLock};
 use std::thread;
-use std::{io, process};
 
 use netanalyzer::args::Args;
 use netanalyzer::parser;
 use netanalyzer::report::ReportWriter;
 
 use netanalyzer::menu::print_menu;
-use netanalyzer::settings::{check_file, read_conf_file};
+use netanalyzer::settings::check_file;
 
 fn main() {
     let args = Args::parse();
-    let mut interface_name = args.interface;
-    if interface_name.is_empty() {
-        interface_name = read_conf_file();
-    }
-
+    let interface_name = args.interface;
     let list_mode = args.list;
     let option = args.commands;
 
@@ -44,6 +40,7 @@ fn main() {
     // Select first interface available temporarly to start sniffing
     // TODO: Select correct interface
     let set = check_file(&interface_name, &tipo, &timeout, &filename);
+    println!("{:?}", set);
     let interface = interfaces.first().unwrap().clone();
     let interface_bis = interface.clone();
 
@@ -59,12 +56,7 @@ fn main() {
         "{}",
         "Press ENTER to pause/resume the sniffing.".bold().cyan()
     );
-    println!(
-        "{}",
-        "Press q and ENTER (while sniffing is paused) to stop the sniffing"
-            .bold()
-            .blue()
-    );
+    println!("{}", "Press q and ENTER (while sniffing is paused) to stop the sniffing".bold().blue());
 
     let (tx_snif_pars, rx_snif_pars) = channel::<Vec<u8>>();
     let (tx_parse_report, rx_parse_report) = channel::<parser::Packet>();
@@ -140,12 +132,7 @@ fn main() {
                 "q" | "Q" => {
                     let pause = lock.read().unwrap();
                     if *pause {
-                        println!(
-                            "{}",
-                            "Sniffing stopped. The program is being exited..."
-                                .bold()
-                                .bright_red()
-                        );
+                        println!("{}", "Sniffing stopped. The program is being exited...".bold().bright_red());
                         process::exit(0);
                     }
                     drop(pause);
@@ -203,16 +190,14 @@ fn main() {
                 "[".bold().cyan(),
                 chrono::offset::Local::now()
                     .format("%Y-%m-%d %H:%M:%S")
-                    .to_string()
-                    .bold()
-                    .cyan(),
+                    .to_string().bold().cyan(),
                 "]".bold().cyan(),
                 "Report".bold().cyan(),
                 "#".bold().cyan(),
                 index.to_string().bold().cyan(),
                 "generated".bold().cyan()
             );
-            report_handle.close_report();
+            report_handle.close_report();            
         }
     });
 
@@ -222,3 +207,4 @@ fn main() {
     report_thread.join().unwrap();
     pause_resume_thread.join().unwrap();
 }
+
