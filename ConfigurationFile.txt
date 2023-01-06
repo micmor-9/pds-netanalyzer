@@ -1,9 +1,12 @@
-enp0s3
+en0
 10
 report
-1
-src host 1.1.1.1
+0
 
 
-dst port 32
 
+
+
+
+
+ip proto \udp

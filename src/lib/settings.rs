@@ -18,7 +18,7 @@ pub struct Settings {
 }
 impl Settings {
     pub fn new() -> Self {
-        if let Ok(lines) = read_lines("./ConfigurationFile.txt") {            
+        if let Ok(lines) = read_lines("./ConfigurationFile.txt") {
             let mut vec = vec![];
             // Consumes the iterator, returns an (Optional) String
             for line in lines {
@@ -33,22 +33,26 @@ impl Settings {
                     1 => print!("{}{} ", "Interface: ".bold(), elem.cyan().bold()),
                     2 => print!("{}{} ", " - Timeout: ".bold(), elem.cyan().bold()),
                     3 => print!("{}{} ", " - Filename: ".bold(), elem.cyan().bold()),
-                    4 => {
-                        match elem.as_str() {
-                            "0" => println!("{}{} ", " - FileType: ".bold(), "txt".cyan().bold()),
-                            "1" => println!("{}{} ", " - FileType: ".bold(), "csv".cyan().bold()),
-                            _ => {},
-                        }
+                    4 => match elem.as_str() {
+                        "0" => println!("{}{} ", " - FileType: ".bold(), "txt".cyan().bold()),
+                        "1" => println!("{}{} ", " - FileType: ".bold(), "csv".cyan().bold()),
+                        _ => {}
                     },
-                    _ => {},
+                    _ => {}
                 }
             }
 
-            let filter = Filter::with_args(vec[4].to_string(),vec[5].to_string(),vec[6].to_string(), vec[7].to_string(),vec[8].to_string());
+            let filter = Filter::with_args(
+                vec[4].to_string(),
+                vec[5].to_string(),
+                vec[6].to_string(),
+                vec[7].to_string(),
+                vec[8].to_string(),
+            );
             let mut tipo = true;
             if vec[3] == "csv" {
                 tipo = true;
-            } else if vec[3] == "txt" {            
+            } else if vec[3] == "txt" {
                 tipo = false;
             }
             let timeoutint: i64 = vec[1].parse().unwrap();
@@ -79,7 +83,12 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-pub fn check_file(interface_name: &String, tipo: &bool, timeout: &i64, filename: &String) -> Settings {
+pub fn check_file(
+    interface_name: &String,
+    tipo: &bool,
+    timeout: &i64,
+    filename: &String,
+) -> Settings {
     let args = Args::parse();
     let tipologia = args.output_type;
     let rs = Path::new("ConfigurationFile.txt").exists();
@@ -104,7 +113,11 @@ pub fn check_file(interface_name: &String, tipo: &bool, timeout: &i64, filename:
             "Default Configuration File created with default configs: ".green()
         );
     } else if rs == true
-        && (*interface_name != "" || *tipo != false || *timeout != 10 || *filename != "report" || tipologia == "txt")
+        && (*interface_name != ""
+            || *tipo != false
+            || *timeout != 10
+            || *filename != "report"
+            || tipologia == "txt")
     {
         fs::remove_file("ConfigurationFile.txt").expect("File delete failed");
         create_conf_file().unwrap();
@@ -126,14 +139,19 @@ pub fn create_conf_file() -> std::io::Result<()> {
     let interfaccia_standard = format!("{}\n", interfaces.first().unwrap().clone().name);
     let tempo = format!("{}\n", args.timeout);
     let nome = format!("{}\n", args.reportname);
-    let tipo = format!("{}\n",match args.output_type.as_str() {
-        "csv" => "1",
-        "txt" => "0",
-        _ => "0"
-    });
+    let tipo = format!(
+        "{}\n",
+        match args.output_type.as_str() {
+            "csv" => "1",
+            "txt" => "0",
+            _ => "0",
+        }
+    );
     let mut f = File::create("ConfigurationFile.txt")?;
 
     if args.interface == "" {
+        f.write_all(interfaccia_standard.as_bytes()).unwrap();
+    } else {
         f.write_all(interfaccia.as_bytes()).unwrap();
     }
     f.write_all(tempo.as_bytes())?;
@@ -141,18 +159,20 @@ pub fn create_conf_file() -> std::io::Result<()> {
     f.write_all(tipo.as_bytes())?;
     let f2 = Filter::new();
     let mut file = OpenOptions::new()
-                    .write(true)
-                    .append(true)
-                    .open("ConfigurationFile.txt")
-                    .unwrap();
-                    file.write_all(format!("{}\n", f2.ip_source).as_bytes()).unwrap();
-                    file.write_all(format!("{}\n", f2.ip_destination).as_bytes()).unwrap();
-                    file.write_all(format!("{}\n", f2.source_port).as_bytes()).unwrap();
-                    file.write_all(format!("{}\n", f2.destination_port).as_bytes()).unwrap();
-                    file.write_all(format!("{}\n", f2.transport_protocol).as_bytes()).unwrap();
-                    
+        .write(true)
+        .append(true)
+        .open("ConfigurationFile.txt")
+        .unwrap();
+    file.write_all(format!("{}\n", f2.ip_source).as_bytes())
+        .unwrap();
+    file.write_all(format!("{}\n", f2.ip_destination).as_bytes())
+        .unwrap();
+    file.write_all(format!("{}\n", f2.source_port).as_bytes())
+        .unwrap();
+    file.write_all(format!("{}\n", f2.destination_port).as_bytes())
+        .unwrap();
+    file.write_all(format!("{}\n", f2.transport_protocol).as_bytes())
+        .unwrap();
+
     Ok(())
 }
-
-
-

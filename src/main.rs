@@ -2,11 +2,11 @@ use clap::Parser;
 use colored::*;
 use netanalyzer::error::ParserError;
 use pcap::{Capture, Device};
-use std::{io, process};
 use std::io::Write;
 use std::sync::mpsc::channel;
 use std::sync::{Arc, Mutex, RwLock};
 use std::thread;
+use std::{io, process};
 
 use netanalyzer::args::Args;
 use netanalyzer::parser;
@@ -30,23 +30,27 @@ fn main() {
     let tipo = match args.output_type.as_str() {
         "csv" => true,
         "txt" => false,
-        _ => false
+        _ => false,
     };
     let filename = args.reportname;
     let timeout = args.timeout;
-    
+
     let interfaces = Device::list().unwrap();
-    
+
     let set = check_file(&interface_name, &tipo, &timeout, &filename);
     let interface_name_bis = set.interface.unwrap().clone();
     let filename_bis = set.filename.unwrap().clone();
 
-    let interface = interfaces.into_iter().find(|i|i.name == interface_name_bis).unwrap_or_else(||{
-        println!("{}", "No such network interface!".bold().red());
-        process::exit(1);
-    });
+    let interface = interfaces
+        .into_iter()
+        .find(|i| i.name == interface_name_bis)
+        .unwrap_or_else(|| {
+            println!("{}", "No such network interface!".bold().red());
+            process::exit(1);
+        });
 
     let interface_bis = interface.clone();
+    let filters = set.filters.unwrap().get_filter_string();
 
     //Set up pcap capture in promisc mode
     let mut capture = Capture::from_device(interface)
@@ -54,8 +58,13 @@ fn main() {
         .promisc(true) // set promiscous mode on
         .immediate_mode(true) // set immediate mode to not buffer packets
         .open() // pass from inactive to active
-        .unwrap_or_else(|_|{
-            println!("{}", "Error opening network socket in promiscous mode. Exiting...".bold().red());
+        .unwrap_or_else(|_| {
+            println!(
+                "{}",
+                "Error opening network socket in promiscous mode. Exiting..."
+                    .bold()
+                    .red()
+            );
             process::exit(1);
         }); // get Ok() from result
 
@@ -63,7 +72,12 @@ fn main() {
         "{}",
         "Press ENTER to pause/resume the sniffing.".bold().cyan()
     );
-    println!("{}", "Press q and ENTER (while sniffing is paused) to stop the sniffing".bold().blue());
+    println!(
+        "{}",
+        "Press q and ENTER (while sniffing is paused) to stop the sniffing"
+            .bold()
+            .blue()
+    );
 
     let (tx_snif_pars, rx_snif_pars) = channel::<Vec<u8>>();
     let (tx_parse_report, rx_parse_report) = channel::<parser::Packet>();
@@ -78,6 +92,17 @@ fn main() {
     let sniffing_thread = thread::spawn(move || {
         let lock = &*pause_handler_snif;
         // TODO: implement filters
+        dbg!(&filters);
+        if filters != "" {
+            capture
+                .filter(&filters, false)
+                .unwrap_or_else(|_| {
+                    println!("{}", "Filters not valid! Exiting...".bold().red());
+                    process::exit(1);
+                });
+            println!("{} {}", filters.bold().red(), " set correctly!".bold().red());
+        }
+
         while let Ok(packet) = capture.next_packet() {
             let pause = lock.read().unwrap();
             if !*pause {
@@ -198,14 +223,16 @@ fn main() {
                 "[".bold().cyan(),
                 chrono::offset::Local::now()
                     .format("%Y-%m-%d %H:%M:%S")
-                    .to_string().bold().cyan(),
+                    .to_string()
+                    .bold()
+                    .cyan(),
                 "]".bold().cyan(),
                 "Report".bold().cyan(),
                 "#".bold().cyan(),
                 index.to_string().bold().cyan(),
                 "generated".bold().cyan()
             );
-            report_handle.close_report();            
+            report_handle.close_report();
         }
     });
 
@@ -215,4 +242,3 @@ fn main() {
     report_thread.join().unwrap();
     pause_resume_thread.join().unwrap();
 }
-

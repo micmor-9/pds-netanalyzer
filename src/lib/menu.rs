@@ -1,7 +1,5 @@
-
-
-use std::fs::{OpenOptions};
-use std::io::{self, Write, Seek, SeekFrom};
+use std::fs::OpenOptions;
+use std::io::{self, Seek, SeekFrom, Write};
 
 use crate::args::Args;
 use crate::settings::check_file;
@@ -45,6 +43,18 @@ impl Filter {
             destination_port,
             transport_protocol,
         };
+    }
+
+    pub fn get_filter_string(self) -> String {
+        let s = format!(
+            "{} {} {} {} {}",
+            self.ip_source,
+            self.ip_destination,
+            self.source_port,
+            self.destination_port,
+            self.transport_protocol
+        );
+        s.trim().to_string()
     }
 }
 
@@ -122,19 +132,23 @@ pub fn print_filters() -> Filter {
                         transport_protocol_ret,
                     );
                     let mut file = OpenOptions::new()
-                    .truncate(false)
-                    .write(true)
-                    .append(false)
-                    .open("ConfigurationFile.txt")
-                    .unwrap();
+                        .truncate(false)
+                        .write(true)
+                        .append(false)
+                        .open("ConfigurationFile.txt")
+                        .unwrap();
                     file.seek(SeekFrom::Start(19)).unwrap();
-                    file.write_all(format!("{}\n", f.ip_source).as_bytes()).unwrap();
-                    file.write_all(format!("{}\n", f.ip_destination).as_bytes()).unwrap();
-                    file.write_all(format!("{}\n", f.source_port).as_bytes()).unwrap();
-                    file.write_all(format!("{}\n", f.destination_port).as_bytes()).unwrap();
-                    file.write_all(format!("{}\n", f.transport_protocol).as_bytes()).unwrap();
-                    return f 
-                    
+                    file.write_all(format!("{}\n", f.ip_source).as_bytes())
+                        .unwrap();
+                    file.write_all(format!("{}\n", f.ip_destination).as_bytes())
+                        .unwrap();
+                    file.write_all(format!("{}\n", f.source_port).as_bytes())
+                        .unwrap();
+                    file.write_all(format!("{}\n", f.destination_port).as_bytes())
+                        .unwrap();
+                    file.write_all(format!("{}\n", f.transport_protocol).as_bytes())
+                        .unwrap();
+                    return f;
                 }
                 _ => {
                     println!("\n{}", "Wrong command.".red());
@@ -144,16 +158,21 @@ pub fn print_filters() -> Filter {
     }
     let f2 = Filter::new();
     let mut file = OpenOptions::new()
-                    .write(true)
-                    .append(true)
-                    .open("ConfigurationFile.txt")
-                    .unwrap();
-                    file.write_all(format!("{}\n", f2.ip_source).as_bytes()).unwrap();
-                    file.write_all(format!("{}\n", f2.ip_destination).as_bytes()).unwrap();
-                    file.write_all(format!("{}\n", f2.source_port).as_bytes()).unwrap();
-                    file.write_all(format!("{}\n", f2.destination_port).as_bytes()).unwrap();
-                    file.write_all(format!("{}\n", f2.transport_protocol).as_bytes()).unwrap();
-                    return f2;
+        .write(true)
+        .append(true)
+        .open("ConfigurationFile.txt")
+        .unwrap();
+    file.write_all(format!("{}\n", f2.ip_source).as_bytes())
+        .unwrap();
+    file.write_all(format!("{}\n", f2.ip_destination).as_bytes())
+        .unwrap();
+    file.write_all(format!("{}\n", f2.source_port).as_bytes())
+        .unwrap();
+    file.write_all(format!("{}\n", f2.destination_port).as_bytes())
+        .unwrap();
+    file.write_all(format!("{}\n", f2.transport_protocol).as_bytes())
+        .unwrap();
+    return f2;
 }
 
 /*pub fn write_on_file (f:Filter) -> std::io::Result<()> {
@@ -330,7 +349,7 @@ pub fn print_menu(
     let tipo = match args.output_type.as_str() {
         "csv" => true,
         "txt" => false,
-        _ => false
+        _ => false,
     };
 
     if list_mode {
@@ -355,14 +374,20 @@ pub fn print_menu(
             "\t-i, --interface\t\tName of the interface to be used for the sniffing".red()
         );
         eprintln!("{}", "\t-l, --list:\t\tShow the net interfaces present in the system without launching the sniffing".red());
-        
+
         eprintln!(
             "{}",
             "\t-f, --filters: \t\tSet the filters for the sniffing".red()
         );
-        eprintln!("\n{}", "\t-c, --commands\t\tShow all possible commands".red());
+        eprintln!(
+            "\n{}",
+            "\t-c, --commands\t\tShow all possible commands".red()
+        );
 
-        eprint!("\n\t{}","If you want to create a default configuration file press (Y/y): ".bold());
+        eprint!(
+            "\n\t{}",
+            "If you want to create a default configuration file press (Y/y): ".bold()
+        );
 
         let mut buf = String::new();
         buf.clear();

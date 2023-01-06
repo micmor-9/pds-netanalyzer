@@ -25,7 +25,9 @@ impl ReportWriter {
         let file_name = get_file_name(filename);
         match csv_or_txt {
             true => {
-                let filecsv = WriterBuilder::new().has_headers(false).from_path(format!("{}/{}_{}.csv", dirname, file_name, num));
+                let filecsv = WriterBuilder::new()
+                    .has_headers(false)
+                    .from_path(format!("{}/{}_{}.csv", dirname, file_name, num));
                 return Self {
                     csv_or_txt,
                     filename: file_name.to_string(),
