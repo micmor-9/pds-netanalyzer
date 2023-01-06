@@ -407,16 +407,14 @@ pub fn print_menu(
         println!(
             "{0: <2}  {1: <10}  {2: <10}",
             "5.",
-            "Set report file type to txt",
-            "\t\t-- -t".bold().green()
+            "Set report file type",
+            "\t\t\t-- -o <csv/txt>".bold().green()
         );
         println!(
             "{0: <2}  {1: <10}  {2: <10}",
             "6.",
             "Set timeout",
             "\t\t\t\t-- -t <value (in s)>\n".bold().green()
-            // "Set report file type",
-            // "\t\t-- -o <csv/txt>".bold().green()
         );
         process::exit(0);
     }
