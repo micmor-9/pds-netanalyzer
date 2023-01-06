@@ -99,18 +99,6 @@ pub fn check_file(interface_name: &String, tipo: &bool, timeout: &i64, filename:
         && *filename == "report"
     {
         create_conf_file().unwrap();
-        let f2 = Filter::new();
-    let mut file = OpenOptions::new()
-                    .write(true)
-                    .append(true)
-                    .open("ConfigurationFile.txt")
-                    .unwrap();
-                    file.write_all(format!("{}\n", f2.ip_source).as_bytes()).unwrap();
-                    file.write_all(format!("{}\n", f2.ip_destination).as_bytes()).unwrap();
-                    file.write_all(format!("{}\n", f2.source_port).as_bytes()).unwrap();
-                    file.write_all(format!("{}\n", f2.destination_port).as_bytes()).unwrap();
-                    file.write_all(format!("{}\n", f2.transport_protocol).as_bytes()).unwrap();
-                    
         print!(
             "\n\t{}",
             "Default Configuration File created with default configs: ".green()
@@ -153,6 +141,18 @@ pub fn create_conf_file() -> std::io::Result<()> {
     f.write_all(tempo.as_bytes())?;
     f.write_all(nome.as_bytes())?;
     f.write_all(tipo.as_bytes())?;
+    let f2 = Filter::new();
+    let mut file = OpenOptions::new()
+                    .write(true)
+                    .append(true)
+                    .open("ConfigurationFile.txt")
+                    .unwrap();
+                    file.write_all(format!("{}\n", f2.ip_source).as_bytes()).unwrap();
+                    file.write_all(format!("{}\n", f2.ip_destination).as_bytes()).unwrap();
+                    file.write_all(format!("{}\n", f2.source_port).as_bytes()).unwrap();
+                    file.write_all(format!("{}\n", f2.destination_port).as_bytes()).unwrap();
+                    file.write_all(format!("{}\n", f2.transport_protocol).as_bytes()).unwrap();
+                    
     Ok(())
     //.to_string() + b"{}\n", args.csv +b"{}\n",args.timeout + b"{}\n", args.filename)?;
 }
