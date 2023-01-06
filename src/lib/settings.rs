@@ -132,10 +132,8 @@ pub fn create_conf_file() -> std::io::Result<()> {
         _ => "0"
     });
     let mut f = File::create("ConfigurationFile.txt")?;
-    // println!("{} {} {} {}", interfaccia_standard,tempo,nome,tipo);
+
     if args.interface == "" {
-        f.write_all(interfaccia_standard.as_bytes()).unwrap();
-    } else {
         f.write_all(interfaccia.as_bytes()).unwrap();
     }
     f.write_all(tempo.as_bytes())?;
@@ -154,7 +152,6 @@ pub fn create_conf_file() -> std::io::Result<()> {
                     file.write_all(format!("{}\n", f2.transport_protocol).as_bytes()).unwrap();
                     
     Ok(())
-    //.to_string() + b"{}\n", args.csv +b"{}\n",args.timeout + b"{}\n", args.filename)?;
 }
 
 

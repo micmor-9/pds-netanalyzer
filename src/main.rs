@@ -32,16 +32,20 @@ fn main() {
         "txt" => false,
         _ => false
     };
-    let timeout = args.timeout;
     let filename = args.reportname;
-
+    let timeout = args.timeout;
+    
     let interfaces = Device::list().unwrap();
-
-    // Select first interface available temporarly to start sniffing
-    // TODO: Select correct interface
+    
     let set = check_file(&interface_name, &tipo, &timeout, &filename);
-    println!("{:?}", set);
-    let interface = interfaces.first().unwrap().clone();
+    let interface_name_bis = set.interface.unwrap().clone();
+    let filename_bis = set.filename.unwrap().clone();
+
+    let interface = interfaces.into_iter().find(|i|i.name == interface_name_bis).unwrap_or_else(||{
+        println!("{}", "No such network interface!".bold().red());
+        process::exit(1);
+    });
+
     let interface_bis = interface.clone();
 
     //Set up pcap capture in promisc mode
@@ -50,7 +54,10 @@ fn main() {
         .promisc(true) // set promiscous mode on
         .immediate_mode(true) // set immediate mode to not buffer packets
         .open() // pass from inactive to active
-        .unwrap(); // get Ok() from result
+        .unwrap_or_else(|_|{
+            println!("{}", "Error opening network socket in promiscous mode. Exiting...".bold().red());
+            process::exit(1);
+        }); // get Ok() from result
 
     println!(
         "{}",
@@ -132,7 +139,7 @@ fn main() {
                 "q" | "Q" => {
                     let pause = lock.read().unwrap();
                     if *pause {
-                        println!("{}", "Sniffing stopped. The program is being exited...".bold().bright_red());
+                        println!("{}", "Sniffing stopped. Exiting...".bold().bright_red());
                         process::exit(0);
                     }
                     drop(pause);
@@ -147,10 +154,11 @@ fn main() {
     let report_thread = thread::spawn(move || {
         let timer = timer::Timer::new();
         let timer_flag_clone = timer_flag.clone();
+        let fname = filename_bis.clone();
         let mut index = 0;
 
         let _timer_guard =
-            timer.schedule_repeating(chrono::Duration::seconds(timeout), move || {
+            timer.schedule_repeating(chrono::Duration::seconds(set.timeout.unwrap()), move || {
                 let lock = &*&pause_handler_rep;
                 let pause = lock.read().unwrap();
 
@@ -178,7 +186,7 @@ fn main() {
             }
 
             index += 1;
-            let mut report_handle = ReportWriter::new(set.csv.unwrap(), &filename.as_str(), index);
+            let mut report_handle = ReportWriter::new(set.csv.unwrap(), &fname, index);
             report_handle.init_report();
 
             for packet in queue {

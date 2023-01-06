@@ -317,7 +317,7 @@ pub fn check_validity_ipv6(splitted_ip: &Vec<&str>) -> bool {
 }
 
 pub fn print_menu(
-    interface_name: String,
+    _interface_name: String,
     list_mode: bool,
     option: bool,
     interfaces: Vec<Device>,
@@ -333,7 +333,7 @@ pub fn print_menu(
         _ => false
     };
 
-    if list_mode && interface_name == "eth0".to_string() {
+    if list_mode {
         println!("\n{}", "THE AVAILABLE NET INTERFACE ARE".bold().green());
         println!("\n{0: <10} | {1: <20}", "Name", "Status");
         println!("--------------------------");
