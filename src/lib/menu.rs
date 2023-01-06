@@ -362,7 +362,7 @@ pub fn print_menu(
         );
         eprintln!("\n{}", "\t-c, --commands\t\tShow all possible commands".red());
 
-        eprintln!("\n{}","If you want to create a default configuration file press (Y/y): ".bold());
+        eprint!("\n\t{}","If you want to create a default configuration file press (Y/y): ".bold());
 
         let mut buf = String::new();
         buf.clear();
