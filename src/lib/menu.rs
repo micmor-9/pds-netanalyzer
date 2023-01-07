@@ -2,7 +2,7 @@ use std::fs::OpenOptions;
 use std::io::{self, Seek, SeekFrom, Write};
 
 use crate::args::Args;
-use crate::settings::check_file;
+use crate::settings::{check_file, create_conf_file};
 use clap::Parser;
 use pcap::Device;
 use std::path::Path;
@@ -131,13 +131,21 @@ pub fn print_filters() -> Filter {
                         destination_port_ret,
                         transport_protocol_ret,
                     );
+
+                    // se il file non esiste, viene creato con le configurazioni standard
+                    let rs = Path::new("ConfigurationFile.txt").exists();
+                    if !rs {
+                        create_conf_file().unwrap();
+                    }
                     let mut file = OpenOptions::new()
                         .truncate(false)
                         .write(true)
                         .append(false)
                         .open("ConfigurationFile.txt")
                         .unwrap();
-                    file.seek(SeekFrom::Start(19)).unwrap();
+                    // file.seek(SeekFrom::Start(16)).unwrap();
+                    file.seek(SeekFrom::End(0)).unwrap();
+
                     file.write_all(format!("{}\n", f.ip_source).as_bytes())
                         .unwrap();
                     file.write_all(format!("{}\n", f.ip_destination).as_bytes())

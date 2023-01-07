@@ -6,6 +6,7 @@ use std::io::Write;
 use std::sync::mpsc::channel;
 use std::sync::{Arc, Mutex, RwLock};
 use std::thread;
+use std::time::Duration;
 use std::{io, process};
 
 use netanalyzer::args::Args;
@@ -70,14 +71,16 @@ fn main() {
 
     println!(
         "{}",
-        "Press ENTER to pause/resume the sniffing.".bold().cyan()
+        "\n\tPress ENTER to pause/resume the sniffing.".bold().cyan()
     );
     println!(
         "{}",
-        "Press q and ENTER (while sniffing is paused) to stop the sniffing"
+        "\tPress q and ENTER (while sniffing is paused) to stop the sniffing\n"
             .bold()
             .blue()
     );
+    
+    thread::sleep(Duration::from_secs(2));
 
     let (tx_snif_pars, rx_snif_pars) = channel::<Vec<u8>>();
     let (tx_parse_report, rx_parse_report) = channel::<parser::Packet>();
@@ -94,13 +97,15 @@ fn main() {
         // TODO: implement filters
         dbg!(&filters);
         if filters != "" {
-            capture
-                .filter(&filters, false)
-                .unwrap_or_else(|_| {
-                    println!("{}", "Filters not valid! Exiting...".bold().red());
-                    process::exit(1);
-                });
-            println!("{} {}", filters.bold().red(), " set correctly!".bold().red());
+            capture.filter(&filters, false).unwrap_or_else(|_| {
+                println!("{}", "Filters not valid! Exiting...".bold().red());
+                process::exit(1);
+            });
+            println!(
+                "{} {}",
+                filters.bold().red(),
+                " set correctly!".bold().red()
+            );
         }
 
         while let Ok(packet) = capture.next_packet() {

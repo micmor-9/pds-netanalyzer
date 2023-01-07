@@ -2,7 +2,7 @@ use crate::args::Args;
 use crate::menu::Filter;
 use clap::Parser;
 use colored::Colorize;
-use pcap::Device;
+// use pcap::Device;
 use std::fs::{self, File, OpenOptions};
 use std::io::BufRead;
 use std::io::{self, Write};
@@ -100,7 +100,13 @@ pub fn check_file(
         && *filename == "report"
         && tipologia == ""
     {
-        println!(" Configuration File exists ");
+        println!("\n{}", "\tCONFIGURATION FILE EXIST!".green().bold());
+        print!(
+            "{}",
+            "\tLaunch the sniffer with previous Configurations: "
+                .green()
+                .bold()
+        );
     } else if rs == false
         && *interface_name == ""
         && *tipo == false
@@ -133,10 +139,12 @@ pub fn check_file(
 }
 
 pub fn create_conf_file() -> std::io::Result<()> {
-    let interfaces = Device::list().unwrap();
+    // let interfaces = Device::list().unwrap();  //da decommentare
     let args = Args::parse();
+    // controllare che senso ha INTERFACCIA
     let interfaccia = format!("{}\n", args.interface);
-    let interfaccia_standard = format!("{}\n", interfaces.first().unwrap().clone().name);
+    // let interfaccia_standard = format!("{}\n", interfaces.first().unwrap().clone().name); //da decommentare
+    let interfaccia_standard = String::from("en0\n");
     let tempo = format!("{}\n", args.timeout);
     let nome = format!("{}\n", args.reportname);
     let tipo = format!(
@@ -157,6 +165,7 @@ pub fn create_conf_file() -> std::io::Result<()> {
     f.write_all(tempo.as_bytes())?;
     f.write_all(nome.as_bytes())?;
     f.write_all(tipo.as_bytes())?;
+
     let f2 = Filter::new();
     let mut file = OpenOptions::new()
         .write(true)
