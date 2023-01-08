@@ -174,10 +174,13 @@ pub fn create_conf_file() -> std::io::Result<()> {
         .unwrap();
     file.write_all(format!("{}\n", f2.ip_source).as_bytes())
         .unwrap();
+
     file.write_all(format!("{}\n", f2.ip_destination).as_bytes())
         .unwrap();
+
     file.write_all(format!("{}\n", f2.source_port).as_bytes())
         .unwrap();
+
     file.write_all(format!("{}\n", f2.destination_port).as_bytes())
         .unwrap();
     file.write_all(format!("{}\n", f2.transport_protocol).as_bytes())

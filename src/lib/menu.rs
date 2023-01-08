@@ -1,5 +1,5 @@
-use std::fs::OpenOptions;
-use std::io::{self, Seek, SeekFrom, Write};
+use std::fs::{self, OpenOptions};
+use std::io::{self, BufRead, BufReader, Seek, SeekFrom, Write};
 
 use crate::args::Args;
 use crate::settings::{check_file, create_conf_file};
@@ -145,7 +145,7 @@ pub fn print_filters() -> Filter {
                         .unwrap();
                     // file.seek(SeekFrom::Start(16)).unwrap();
                     file.seek(SeekFrom::End(0)).unwrap();
-
+                    // file.seek(SeekFrom::Start(16)).unwrap();
                     file.write_all(format!("{}\n", f.ip_source).as_bytes())
                         .unwrap();
                     file.write_all(format!("{}\n", f.ip_destination).as_bytes())
@@ -156,6 +156,7 @@ pub fn print_filters() -> Filter {
                         .unwrap();
                     file.write_all(format!("{}\n", f.transport_protocol).as_bytes())
                         .unwrap();
+
                     return f;
                 }
                 _ => {
