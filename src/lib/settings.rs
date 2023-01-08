@@ -134,17 +134,43 @@ pub fn check_file(
 ) -> Settings {
     let args = Args::parse();
     let tipologia = args.output_type;
-    let rs = Settings::read_from_file();
+    let mut file_exist = true;
+    let rs = Settings::read_from_file().unwrap_or_else(|_| {
+        file_exist = false;
+        Settings::new_empty()
+    });
 
-    if rs.is_ok()
+    if file_exist
         && *interface_name == ""
         && *tipo == false
         && *timeout == 10
         && *filename == "report"
         && tipologia == ""
     {
-        println!(" Configuration File exists ");
-    } else if rs.is_err()
+        println!("\n{}", "\tConfiguration File exists".bold());
+        print!(
+            "\n{}",
+            "\tLaunching the sniffer with previous Configurations\n\n"
+                .green()
+                .bold()
+        );
+        println!("\t{}{}", "Interface: ", rs.interface.as_ref().unwrap());
+        println!(
+            "\t{}{}",
+            "Output Type: ",
+            match rs.csv.as_ref().unwrap() {
+                true => "CSV",
+                false => "TXT",
+            }
+        );
+        println!("\t{}{}", "Timeout: ", rs.timeout.as_ref().unwrap());
+        println!("\t{}{}", "Filename: ", rs.filename.as_ref().unwrap());
+        println!(
+            "\t{}{}",
+            "Filters: ",
+            rs.filters.as_ref().unwrap().get_filter_string()
+        );
+    } else if !file_exist
         && *interface_name == ""
         && *tipo == false
         && *timeout == 10
@@ -153,9 +179,20 @@ pub fn check_file(
         create_conf_file().unwrap();
         print!(
             "\n\t{}",
-            "Default Configuration File created with default configs: ".green()
+            "Default Configuration File created with default configs: ".green(),
         );
-    } else if rs.is_ok()
+        print!(
+            "{}{}{}{}{}{}{}{}",
+            "Interface: ".bold(),
+            "en0".cyan(),
+            " - Type output: ".bold(),
+            "txt".cyan(),
+            " - Timeout ".bold(),
+            "10sec".cyan(),
+            " - Filename ".bold(),
+            "report\n".cyan()
+        );
+    } else if file_exist
         && (*interface_name != ""
             || *tipo != false
             || *timeout != 10
@@ -165,7 +202,7 @@ pub fn check_file(
         fs::remove_file("ConfigurationFile.txt").expect("File delete failed");
         create_conf_file().unwrap();
         println!("Customized Configuration File updated");
-    } else if rs.is_err()
+    } else if !file_exist
         && (*interface_name != "" || *tipo != false || *timeout != 10 || *filename != "report")
     {
         create_conf_file().unwrap();
@@ -180,10 +217,11 @@ pub fn check_file(
 }
 
 pub fn create_conf_file() -> std::io::Result<()> {
-    let interfaces = Device::list().unwrap();  //da decommentare
+    let interfaces = Device::list().unwrap(); //da decommentare
     let args = Args::parse();
     let mut interface = args.interface;
-    let interfaccia_standard = interfaces.first().unwrap().clone().name;
+    let standard_interface = interfaces.first().unwrap().clone().name;
+    // let standard_interface = String::from("en0");
     let time = args.timeout;
     let name = args.reportname;
     let r_type = match args.output_type.as_str() {
@@ -193,41 +231,12 @@ pub fn create_conf_file() -> std::io::Result<()> {
     };
 
     if interface == "" {
-        interface = interfaccia_standard;
+        interface = standard_interface;
     }
 
     let filter_to_write = Filter::new();
 
-    dbg!(&filter_to_write);
-
     let settings_to_write = Settings::with_args(interface, r_type, time, name, filter_to_write);
 
     settings_to_write.write_to_file()
-
-    /*let mut f = File::create("ConfigurationFile.txt")?;
-
-    f.write_all(time.as_bytes())?;
-    f.write_all(name.as_bytes())?;
-    f.write_all(r_type.as_bytes())?;
-    let f2 = Filter::new();
-    let mut file = OpenOptions::new()
-        .write(true)
-        .append(true)
-        .open("ConfigurationFile.txt")
-        .unwrap();
-    file.write_all(format!("{}\n", f2.ip_source).as_bytes())
-        .unwrap();
-
-    file.write_all(format!("{}\n", f2.ip_destination).as_bytes())
-        .unwrap();
-
-    file.write_all(format!("{}\n", f2.source_port).as_bytes())
-        .unwrap();
-
-    file.write_all(format!("{}\n", f2.destination_port).as_bytes())
-        .unwrap();
-    file.write_all(format!("{}\n", f2.transport_protocol).as_bytes())
-        .unwrap();
-
-    Ok(())*/
 }
