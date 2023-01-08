@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 en0
 10
 report
 0
+=======
+{"interface":"en0","csv":false,"timeout":10,"filename":"report","filters":{"ip_source":"","ip_destination":"","source_port":"","destination_port":"","transport_protocol":""}}
+>>>>>>> 5a2b52a074970f7544d90e40011637dcc153dd9d

@@ -19,9 +19,11 @@ idee da discutere con gli altri:
 
 Nuovo
 - aggiugnere struct filtri a settings, aggiungere filtri a conf file e leggerli -> rob
-- modificare le impostazioni di sniffing leggendo dalla struct settings completa -> micm
+- modificare le impostazioni di sniffing leggendo dalla struct settings completa -> micm FATTO
 - aggiustare i check del menu -> rob micg
-- selezionare interfaccia sniffing -> micm
+- selezionare interfaccia sniffing -> micm FATTO
 - aggiustare cambio txt e csv da args -> rob
-- eliminare stampa doppia nomi colonne csv -> micm
+- eliminare stampa doppia nomi colonne csv -> micm FATTO
 - aggiornare lista menu con comandi corretti -> micg
+
+- applicare i filtri dopo che sono stati aggiunti a Settings
