@@ -1,17 +1,15 @@
-use std::fs::OpenOptions;
-use std::io::{self, Seek, SeekFrom, Write};
-
+use std::io;
 use crate::args::Args;
-use crate::settings::check_file;
+use crate::settings::{check_file, Settings};
 use clap::Parser;
 use pcap::Device;
+use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::process;
 
 use colored::Colorize;
 
-#[derive(Debug)]
-
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Filter {
     pub ip_source: String,
     pub ip_destination: String,
@@ -131,7 +129,20 @@ pub fn print_filters() -> Filter {
                         destination_port_ret,
                         transport_protocol_ret,
                     );
-                    let mut file = OpenOptions::new()
+                    let set = Settings::read_from_file();
+                    if set.is_ok() {
+                        let mut settings = set.unwrap();
+                        settings.filters = Some(f);
+                        settings.write_to_file().unwrap_or_else(|_| {
+                            eprintln!("Error while writing filters on file...");
+                            process::exit(1);
+                        });
+                        return settings.filters.unwrap();
+                    } else {
+                        eprintln!("Conf file doesn't exist!");
+                        process::exit(1);
+                    }
+                    /*let mut file = OpenOptions::new()
                         .truncate(false)
                         .write(true)
                         .append(false)
@@ -148,7 +159,7 @@ pub fn print_filters() -> Filter {
                         .unwrap();
                     file.write_all(format!("{}\n", f.transport_protocol).as_bytes())
                         .unwrap();
-                    return f;
+                    return f;*/
                 }
                 _ => {
                     println!("\n{}", "Wrong command.".red());
@@ -157,7 +168,20 @@ pub fn print_filters() -> Filter {
         }
     }
     let f2 = Filter::new();
-    let mut file = OpenOptions::new()
+    let set = Settings::read_from_file();
+    if set.is_ok() {
+        let mut settings = set.unwrap();
+        settings.filters = Some(f2);
+        settings.write_to_file().unwrap_or_else(|_| {
+            eprintln!("Error while writing filters on file...");
+            process::exit(1);
+        });
+        return settings.filters.unwrap();
+    } else {
+        eprintln!("Error in conf file");
+        return f2;
+    }
+    /*let mut file = OpenOptions::new()
         .write(true)
         .append(true)
         .open("ConfigurationFile.txt")
@@ -172,7 +196,7 @@ pub fn print_filters() -> Filter {
         .unwrap();
     file.write_all(format!("{}\n", f2.transport_protocol).as_bytes())
         .unwrap();
-    return f2;
+    return f2;*/
 }
 
 /*pub fn write_on_file (f:Filter) -> std::io::Result<()> {

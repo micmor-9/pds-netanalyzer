@@ -94,13 +94,15 @@ fn main() {
         // TODO: implement filters
         dbg!(&filters);
         if filters != "" {
-            capture
-                .filter(&filters, false)
-                .unwrap_or_else(|_| {
-                    println!("{}", "Filters not valid! Exiting...".bold().red());
-                    process::exit(1);
-                });
-            println!("{} {}", filters.bold().red(), " set correctly!".bold().red());
+            capture.filter(&filters, false).unwrap_or_else(|_| {
+                println!("{}", "Filters not valid! Exiting...".bold().red());
+                process::exit(1);
+            });
+            println!(
+                "{} {}",
+                filters.bold().red(),
+                " set correctly!".bold().red()
+            );
         }
 
         while let Ok(packet) = capture.next_packet() {
