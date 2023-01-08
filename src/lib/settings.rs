@@ -2,13 +2,15 @@ use crate::args::Args;
 use crate::menu::Filter;
 use clap::Parser;
 use colored::Colorize;
-// use pcap::Device;
-use std::fs::{self, File, OpenOptions};
+use pcap::Device;
+use serde::{Deserialize, Serialize};
+use serde_json;
+use std::fs::{self, File};
+use std::io;
 use std::io::BufRead;
-use std::io::{self, Write};
 use std::path::Path;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Settings {
     pub interface: Option<String>,
     pub csv: Option<bool>,
@@ -17,6 +19,32 @@ pub struct Settings {
     pub filters: Option<Filter>,
 }
 impl Settings {
+    pub fn new_empty() -> Self {
+        return Settings {
+            interface: None,
+            csv: None,
+            timeout: None,
+            filename: None,
+            filters: None,
+        };
+    }
+
+    fn with_args(
+        interface: String,
+        csv: bool,
+        timeout: i64,
+        filename: String,
+        filters: Filter,
+    ) -> Self {
+        return Settings {
+            interface: Some(interface),
+            csv: Some(csv),
+            timeout: Some(timeout),
+            filename: Some(filename),
+            filters: Some(filters),
+        };
+    }
+
     pub fn new() -> Self {
         if let Ok(lines) = read_lines("./ConfigurationFile.txt") {
             let mut vec = vec![];
@@ -73,6 +101,21 @@ impl Settings {
             };
         }
     }
+
+    pub fn write_to_file(&self) -> Result<(), std::io::Error> {
+        let serialized_settings = serde_json::to_string(self).unwrap();
+        std::fs::write("ConfigurationFile.txt", serialized_settings)
+    }
+
+    pub fn read_from_file() -> Result<Settings, std::io::Error> {
+        let input_path = Path::new("ConfigurationFile.txt");
+        let unserialized_settings = std::fs::read_to_string(input_path);
+        if unserialized_settings.is_ok() {
+            Ok(serde_json::from_str::<Settings>(&unserialized_settings.unwrap()).unwrap())
+        } else {
+            Err(unserialized_settings.unwrap_err())
+        }
+    }
 }
 
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
@@ -91,23 +134,17 @@ pub fn check_file(
 ) -> Settings {
     let args = Args::parse();
     let tipologia = args.output_type;
-    let rs = Path::new("ConfigurationFile.txt").exists();
+    let rs = Settings::read_from_file();
 
-    if rs == true
+    if rs.is_ok()
         && *interface_name == ""
         && *tipo == false
         && *timeout == 10
         && *filename == "report"
         && tipologia == ""
     {
-        println!("\n{}", "\tCONFIGURATION FILE EXIST!".green().bold());
-        print!(
-            "{}",
-            "\tLaunch the sniffer with previous Configurations: "
-                .green()
-                .bold()
-        );
-    } else if rs == false
+        println!(" Configuration File exists ");
+    } else if rs.is_err()
         && *interface_name == ""
         && *tipo == false
         && *timeout == 10
@@ -118,7 +155,7 @@ pub fn check_file(
             "\n\t{}",
             "Default Configuration File created with default configs: ".green()
         );
-    } else if rs == true
+    } else if rs.is_ok()
         && (*interface_name != ""
             || *tipo != false
             || *timeout != 10
@@ -128,44 +165,50 @@ pub fn check_file(
         fs::remove_file("ConfigurationFile.txt").expect("File delete failed");
         create_conf_file().unwrap();
         println!("Customized Configuration File updated");
-    } else if rs == false
+    } else if rs.is_err()
         && (*interface_name != "" || *tipo != false || *timeout != 10 || *filename != "report")
     {
         create_conf_file().unwrap();
         println!("Customized Configuration File created");
     }
-    let set = Settings::new();
-    return set;
+    let set = Settings::read_from_file();
+    if set.is_ok() {
+        return set.unwrap();
+    } else {
+        return Settings::new_empty();
+    }
 }
 
 pub fn create_conf_file() -> std::io::Result<()> {
-    // let interfaces = Device::list().unwrap();  //da decommentare
+    let interfaces = Device::list().unwrap();  //da decommentare
     let args = Args::parse();
-    // controllare che senso ha INTERFACCIA
-    let interfaccia = format!("{}\n", args.interface);
-    // let interfaccia_standard = format!("{}\n", interfaces.first().unwrap().clone().name); //da decommentare
-    let interfaccia_standard = String::from("en0\n");
-    let tempo = format!("{}\n", args.timeout);
-    let nome = format!("{}\n", args.reportname);
-    let tipo = format!(
-        "{}\n",
-        match args.output_type.as_str() {
-            "csv" => "1",
-            "txt" => "0",
-            _ => "0",
-        }
-    );
-    let mut f = File::create("ConfigurationFile.txt")?;
+    let mut interface = args.interface;
+    let interfaccia_standard = interfaces.first().unwrap().clone().name;
+    let time = args.timeout;
+    let name = args.reportname;
+    let r_type = match args.output_type.as_str() {
+        "csv" => true,
+        "txt" => false,
+        _ => false,
+    };
 
-    if args.interface == "" {
-        f.write_all(interfaccia_standard.as_bytes()).unwrap();
-    } else {
-        f.write_all(interfaccia.as_bytes()).unwrap();
+    if interface == "" {
+        interface = interfaccia_standard;
     }
-    f.write_all(tempo.as_bytes())?;
-    f.write_all(nome.as_bytes())?;
-    f.write_all(tipo.as_bytes())?;
 
+    let filter_to_write = Filter::new();
+
+    dbg!(&filter_to_write);
+
+    let settings_to_write = Settings::with_args(interface, r_type, time, name, filter_to_write);
+
+    settings_to_write.write_to_file()
+
+    /*let mut f = File::create("ConfigurationFile.txt")?;
+
+    f.write_all(time.as_bytes())?;
+    f.write_all(name.as_bytes())?;
+    f.write_all(r_type.as_bytes())?;
     let f2 = Filter::new();
     let mut file = OpenOptions::new()
         .write(true)
@@ -186,5 +229,5 @@ pub fn create_conf_file() -> std::io::Result<()> {
     file.write_all(format!("{}\n", f2.transport_protocol).as_bytes())
         .unwrap();
 
-    Ok(())
+    Ok(())*/
 }
