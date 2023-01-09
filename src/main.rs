@@ -23,9 +23,10 @@ fn main() {
 
     let interface = Device::list().unwrap();
     let filters = args.filters;
+    let reset_filters = args.wreset_filters;
 
     let inter = interface_name.clone();
-    print_menu(inter, list_mode, option, interface, filters);
+    print_menu(inter, list_mode, option, interface, filters, reset_filters);
 
     let tipo = match args.output_type.as_str() {
         "csv" => true,

@@ -365,6 +365,7 @@ pub fn print_menu(
     option: bool,
     interfaces: Vec<Device>,
     filters: bool,
+    reset_filters: bool
 ) {
     let args = Args::parse();
     let interface = args.interface;
@@ -375,6 +376,8 @@ pub fn print_menu(
         "txt" => false,
         _ => false,
     };
+
+    dbg!(reset_filters);
 
     if list_mode {
         println!("\n{}", "THE AVAILABLE NET INTERFACE ARE".bold().green());
@@ -464,6 +467,12 @@ pub fn print_menu(
             "6.",
             "Set timeout",
             "\t\t\t\t-- -t <value (in s)>\n".bold().green()
+        );
+        println!(
+            "{0: <2}  {1: <10}  {2: <10}",
+            "7.",
+            "Reset filters",
+            "\t\t\t\t-- -w \n".bold().green()
         );
         process::exit(0);
     }

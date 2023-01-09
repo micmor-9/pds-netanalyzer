@@ -27,4 +27,7 @@ pub struct Args {
 
     #[arg(short, long, action, default_value = "")]
     pub output_type: String,
+
+    #[arg(short, long, action)]
+    pub wreset_filters: bool
 }
