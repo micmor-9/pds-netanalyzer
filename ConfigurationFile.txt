@@ -1,1 +1,1 @@
-{"interface":"en0","csv":false,"timeout":10,"filename":"report","filters":{"ip_source":"","ip_destination":"","source_port":"","destination_port":"","transport_protocol":""}}
+{"interface":"en0","csv":false,"timeout":10,"filename":"report","filters":{"ip_source":"src host 192.168.1.58","ip_destination":"dst host 192.168.1.54","source_port":"","destination_port":"","transport_protocol":""}}
