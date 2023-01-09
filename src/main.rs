@@ -23,9 +23,10 @@ fn main() {
 
     let interface = Device::list().unwrap();
     let filters = args.filters;
+    let reset_filters = args.wreset_filters;
 
     let inter = interface_name.clone();
-    print_menu(inter, list_mode, option, interface, filters);
+    print_menu(inter, list_mode, option, interface, filters, reset_filters);
 
     let tipo = match args.output_type.as_str() {
         "csv" => true,
@@ -70,11 +71,13 @@ fn main() {
 
     println!(
         "{}",
-        "Press ENTER to pause/resume the sniffing.".bold().cyan()
+        "\nPress ENTER to pause/resume the sniffing."
+            .bold()
+            .cyan()
     );
     println!(
         "{}",
-        "Press q and ENTER (while sniffing is paused) to stop the sniffing"
+        "Press q and ENTER (while sniffing is paused) to stop the sniffing\n"
             .bold()
             .blue()
     );
@@ -82,7 +85,7 @@ fn main() {
     let (tx_snif_pars, rx_snif_pars) = channel::<Vec<u8>>();
     let (tx_parse_report, rx_parse_report) = channel::<parser::Packet>();
 
-    let rwlock = Arc::new(RwLock::new(false));
+    let rwlock = Arc::new(RwLock::new(true));
     let pause_handler = Arc::clone(&rwlock);
     let pause_handler_snif = Arc::clone(&rwlock);
     let pause_handler_parse = Arc::clone(&rwlock);
@@ -91,16 +94,16 @@ fn main() {
     // Thread for sniffing the packets on the network via pcap
     let sniffing_thread = thread::spawn(move || {
         let lock = &*pause_handler_snif;
-        // TODO: implement filters
-        dbg!(&filters);
         if filters != "" {
-            capture
-                .filter(&filters, false)
-                .unwrap_or_else(|_| {
-                    println!("{}", "Filters not valid! Exiting...".bold().red());
-                    process::exit(1);
-                });
-            println!("{} {}", filters.bold().red(), " set correctly!".bold().red());
+            capture.filter(&filters, false).unwrap_or_else(|_| {
+                println!("{}", "Filters not valid! Exiting...".bold().red());
+                process::exit(1);
+            });
+            println!(
+                "{} {}",
+                filters.bold().red(),
+                " set correctly!".bold().red()
+            );
         }
 
         while let Ok(packet) = capture.next_packet() {

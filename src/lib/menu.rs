@@ -1,17 +1,15 @@
-use std::fs::OpenOptions;
-use std::io::{self, Seek, SeekFrom, Write};
-
 use crate::args::Args;
-use crate::settings::check_file;
+use crate::settings::{check_file, create_conf_file, Settings};
 use clap::Parser;
 use pcap::Device;
+use serde::{Deserialize, Serialize};
+use std::io;
 use std::path::Path;
 use std::process;
 
 use colored::Colorize;
 
-#[derive(Debug)]
-
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Filter {
     pub ip_source: String,
     pub ip_destination: String,
@@ -45,37 +43,40 @@ impl Filter {
         };
     }
 
-    pub fn get_filter_string(self) -> String {
-        let s = format!(
-            "{} {} {} {} {}",
-            self.ip_source,
-            self.ip_destination,
-            self.source_port,
-            self.destination_port,
-            self.transport_protocol
-        );
-        s.trim().to_string()
+    pub fn get_filter_string(&self) -> String {
+        let mut options = Vec::<String>::new();
+        if self.ip_source != "" {
+            options.push(self.ip_source.to_string())
+        }
+        if self.ip_destination != "" {
+            options.push(self.ip_destination.to_string())
+        }
+        if self.source_port != "" {
+            options.push(self.source_port.to_string())
+        }
+        if self.destination_port != "" {
+            options.push(self.destination_port.to_string())
+        }
+        if self.transport_protocol != "" {
+            options.push(self.transport_protocol.to_string())
+        }
+        return options.join(" and ");
     }
 }
 
 // Only the list of settings
 pub fn filter_list() -> () {
     println!("\n{}", "FILTER OPTION:".bold().green());
-    println!("1. \t Filter by {}", "source IP".green());
-    println!("2. \t Filter by {}", "destination IP".green());
-    println!("3. \t Filter by {}", "source port".green());
-    println!("4. \t Filter by {}", "destination port".green());
-    println!("5. \t Filter by {}", "transport protocol".green());
-    println!("0. \t Back to menu\n");
+    println!("1.  Filter by {}", "source IP".green());
+    println!("2.  Filter by {}", "destination IP".green());
+    println!("3.  Filter by {}", "source port".green());
+    println!("4.  Filter by {}", "destination port".green());
+    println!("5.  Filter by {}", "transport protocol".green());
+    println!("0.  Back to menu\n");
 }
 
 pub fn print_filters() -> Filter {
     let args = Args::parse();
-    // let mut conditional_settings = Vec::<String>::new();
-
-    // TODO: aggiungere tutta la parte per aggiungere le varie opzioni in conditional settings
-
-    // let mut filters = Filter::new();
     let filters = args.filters;
     let err_msg = "Failed to read line".red();
 
@@ -124,31 +125,45 @@ pub fn print_filters() -> Filter {
                     let source_port_ret = source_port.join(" or ");
                     let destination_port_ret = destination_port.join(" or ");
                     let transport_protocol_ret = transport_protocol.join(" or ");
-                    let f = Filter::with_args(
-                        ip_source_ret,
-                        ip_destination_ret,
-                        source_port_ret,
-                        destination_port_ret,
-                        transport_protocol_ret,
-                    );
-                    let mut file = OpenOptions::new()
-                        .truncate(false)
-                        .write(true)
-                        .append(false)
-                        .open("ConfigurationFile.txt")
-                        .unwrap();
-                    file.seek(SeekFrom::Start(19)).unwrap();
-                    file.write_all(format!("{}\n", f.ip_source).as_bytes())
-                        .unwrap();
-                    file.write_all(format!("{}\n", f.ip_destination).as_bytes())
-                        .unwrap();
-                    file.write_all(format!("{}\n", f.source_port).as_bytes())
-                        .unwrap();
-                    file.write_all(format!("{}\n", f.destination_port).as_bytes())
-                        .unwrap();
-                    file.write_all(format!("{}\n", f.transport_protocol).as_bytes())
-                        .unwrap();
-                    return f;
+                    // let f = Filter::with_args(
+                    //     ip_source_ret,
+                    //     ip_destination_ret,
+                    //     source_port_ret,
+                    //     destination_port_ret,
+                    //     transport_protocol_ret,
+                    // );
+                    let mut f = Settings::read_from_file().unwrap().filters.unwrap();
+                    if ip_source_ret != "" {
+                        f.ip_source = ip_source_ret;
+                    }
+                    if ip_destination_ret != "" {
+                        f.ip_destination = ip_destination_ret;
+                    }
+                    if source_port_ret != "" {
+                        f.source_port = source_port_ret;
+                    }
+                    if destination_port_ret != "" {
+                        f.destination_port = destination_port_ret;
+                    }
+                    if transport_protocol_ret != "" {
+                        f.transport_protocol = transport_protocol_ret;
+                    }
+
+                    let set_check = Settings::read_from_file();
+
+                    if !set_check.is_ok() {
+                        create_conf_file().unwrap();
+                    }
+
+                    let set = Settings::read_from_file();
+
+                    let mut settings = set.unwrap();
+                    settings.filters = Some(f);
+                    settings.write_to_file().unwrap_or_else(|_| {
+                        eprintln!("Error while writing filters on file...");
+                        process::exit(1);
+                    });
+                    return settings.filters.unwrap();
                 }
                 _ => {
                     println!("\n{}", "Wrong command.".red());
@@ -157,34 +172,20 @@ pub fn print_filters() -> Filter {
         }
     }
     let f2 = Filter::new();
-    let mut file = OpenOptions::new()
-        .write(true)
-        .append(true)
-        .open("ConfigurationFile.txt")
-        .unwrap();
-    file.write_all(format!("{}\n", f2.ip_source).as_bytes())
-        .unwrap();
-    file.write_all(format!("{}\n", f2.ip_destination).as_bytes())
-        .unwrap();
-    file.write_all(format!("{}\n", f2.source_port).as_bytes())
-        .unwrap();
-    file.write_all(format!("{}\n", f2.destination_port).as_bytes())
-        .unwrap();
-    file.write_all(format!("{}\n", f2.transport_protocol).as_bytes())
-        .unwrap();
-    return f2;
+    let set = Settings::read_from_file();
+    if set.is_ok() {
+        let mut settings = set.unwrap();
+        settings.filters = Some(f2);
+        settings.write_to_file().unwrap_or_else(|_| {
+            eprintln!("Error while writing filters on file...");
+            process::exit(1);
+        });
+        return settings.filters.unwrap();
+    } else {
+        eprintln!("Error in conf file");
+        return f2;
+    }
 }
-
-/*pub fn write_on_file (f:Filter) -> std::io::Result<()> {
-    let mut file = File::open("ConfigurationFile.txt")?;
-    /*file.write_all(format!("{}\n", f.ip_source).as_bytes()).unwrap();
-    file.write_all(format!("{}\n", f.ip_destination).as_bytes()).unwrap();
-    file.write_all(format!("{}\n", f.source_port).as_bytes()).unwrap();
-    file.write_all(format!("{}\n", f.destination_port).as_bytes()).unwrap();
-    file.write_all(format!("{}\n", f.transport_protocol).as_bytes()).unwrap();*/
-    writeln!(file,"{}",f.ip_source);
-    Ok(())
-} */
 
 pub fn filter_transport_protocol() -> String {
     let mut transport_protocol = String::new();
@@ -277,7 +278,6 @@ pub fn check_validity_ip(ip: &String) -> bool {
 
     // check ipv4 or ipv6
     match splitted_ip.len() {
-        // 4 => check = check_validity_ipv4(&splitted_ip),
         4 => {
             if check_validity_ipv4(&splitted_ip) {
                 println!("{}", "The ipv4 address inserted is valid".green());
@@ -341,6 +341,7 @@ pub fn print_menu(
     option: bool,
     interfaces: Vec<Device>,
     filters: bool,
+    reset_filters: bool
 ) {
     let args = Args::parse();
     let interface = args.interface;
@@ -351,6 +352,19 @@ pub fn print_menu(
         "txt" => false,
         _ => false,
     };
+
+    dbg!(reset_filters);
+
+    if reset_filters {
+        let mut cur_set = Settings::read_from_file().unwrap_or_else(|_|{
+            eprintln!("{}", "Cannot reset filters. Configuration file doesn't exist! Exiting...".bold().red());
+            process::exit(1);
+        });
+        cur_set.filters = Some(Filter::new());
+        cur_set.write_to_file().unwrap();
+        println!("{}", "Previous filters have been reset. Exiting...".bold().bright_green());
+        process::exit(0);
+    }
 
     if list_mode {
         println!("\n{}", "THE AVAILABLE NET INTERFACE ARE".bold().green());
@@ -367,7 +381,6 @@ pub fn print_menu(
         process::exit(0);
     }
     if !list_mode && !option && !filters && !Path::new("./ConfigurationFile.txt").exists() {
-        // TODO -> first af all search for a configuration file and then ask to choose the parameters
         eprintln!("\n{}", "No configuration file found".bold().red());
         eprintln!(
             "{}",
@@ -439,7 +452,13 @@ pub fn print_menu(
             "{0: <2}  {1: <10}  {2: <10}",
             "6.",
             "Set timeout",
-            "\t\t\t\t-- -t <value (in s)>\n".bold().green()
+            "\t\t\t\t-- -t <value (in s)>".bold().green()
+        );
+        println!(
+            "{0: <2}  {1: <10}  {2: <10}",
+            "7.",
+            "Reset filters",
+            "\t\t\t\t-- -w \n".bold().green()
         );
         process::exit(0);
     }

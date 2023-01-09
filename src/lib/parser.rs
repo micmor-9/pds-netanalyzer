@@ -1,4 +1,5 @@
 use chrono;
+use colored::Colorize;
 use pcap::Device;
 use pktparse::arp::parse_arp_pkt;
 use pktparse::ethernet::{parse_ethernet_frame, EtherType};
@@ -56,7 +57,7 @@ impl Packet {
 impl Display for Packet {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         //| Interface \t| Source IP Address \t| Destination IP Address \t| Source Port \t| Dest. Port \t| Length \t| Transp. Protocol \t| Application Protocol \t| Timestamp \t|
-        write!(f, "| {0:<5} | {1:<25} | {2:<25} | {3:<5} \t| {4:<5} \t| {5:<4} \t| {6:<25} | {7:<25} | {8} \t|", self.interface, self.src_address, self.dest_address, self.src_port.unwrap_or(0), self.dest_port.unwrap_or(0), self.length, self.transport, self.application, self.timestamp)
+        write!(f, "| {0:<5} | {1:<25} | {2:<25} | {3:<5} \t| {4:<5} \t| {5:<15} \t| {6:<15} | {7:<15} | {8} \t|", self.interface.green(), self.src_address, self.dest_address, self.src_port.unwrap_or(0), self.dest_port.unwrap_or(0), self.length, self.transport, self.application, self.timestamp)
     }
 }
 
