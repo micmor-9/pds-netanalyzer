@@ -355,6 +355,17 @@ pub fn print_menu(
 
     dbg!(reset_filters);
 
+    if reset_filters {
+        let mut cur_set = Settings::read_from_file().unwrap_or_else(|_|{
+            eprintln!("{}", "Cannot reset filters. Configuration file doesn't exist! Exiting...".bold().red());
+            process::exit(1);
+        });
+        cur_set.filters = Some(Filter::new());
+        cur_set.write_to_file().unwrap();
+        println!("{}", "Previous filters have been reset. Exiting...".bold().bright_green());
+        process::exit(0);
+    }
+
     if list_mode {
         println!("\n{}", "THE AVAILABLE NET INTERFACE ARE".bold().green());
         println!("\n{0: <10} | {1: <20}", "Name", "Status");
@@ -441,7 +452,7 @@ pub fn print_menu(
             "{0: <2}  {1: <10}  {2: <10}",
             "6.",
             "Set timeout",
-            "\t\t\t\t-- -t <value (in s)>\n".bold().green()
+            "\t\t\t\t-- -t <value (in s)>".bold().green()
         );
         println!(
             "{0: <2}  {1: <10}  {2: <10}",

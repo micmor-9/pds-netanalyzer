@@ -71,13 +71,13 @@ fn main() {
 
     println!(
         "{}",
-        "\n\tPress ENTER to pause/resume the sniffing."
+        "\nPress ENTER to pause/resume the sniffing."
             .bold()
             .cyan()
     );
     println!(
         "{}",
-        "\tPress q and ENTER (while sniffing is paused) to stop the sniffing\n"
+        "Press q and ENTER (while sniffing is paused) to stop the sniffing\n"
             .bold()
             .blue()
     );
