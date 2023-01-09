@@ -1,5 +1,4 @@
 use chrono;
-use colored::Colorize;
 use pcap::Device;
 use pktparse::arp::parse_arp_pkt;
 use pktparse::ethernet::{parse_ethernet_frame, EtherType};
