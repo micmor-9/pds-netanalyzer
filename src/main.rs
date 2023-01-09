@@ -1,6 +1,5 @@
 use clap::Parser;
 use colored::*;
-use netanalyzer::error::ParserError;
 use pcap::{Capture, Device};
 use std::io::Write;
 use std::sync::mpsc::channel;
@@ -71,9 +70,7 @@ fn main() {
 
     println!(
         "{}",
-        "\nPress ENTER to pause/resume the sniffing."
-            .bold()
-            .cyan()
+        "\nPress ENTER to start/pause the sniffing.".bold().cyan()
     );
     println!(
         "{}",
@@ -85,6 +82,7 @@ fn main() {
     let (tx_snif_pars, rx_snif_pars) = channel::<Vec<u8>>();
     let (tx_parse_report, rx_parse_report) = channel::<parser::Packet>();
 
+    let mut header = true;
     let rwlock = Arc::new(RwLock::new(true));
     let pause_handler = Arc::clone(&rwlock);
     let pause_handler_snif = Arc::clone(&rwlock);
@@ -123,19 +121,20 @@ fn main() {
             let parsed_packet = parser::ethernet_frame(&interface_bis, &packet);
             let pause = lock.read().unwrap();
             if !*pause {
+                if header {
+                    println!("{}", "| Interface | Source IP Address              | Destination IP Address         | Src Port | Dest. Port | Length | Transport Protocol             | Applic. Protocol  | Timestamp           |".bold());
+                    header = false;
+                }
                 match parsed_packet {
                     Ok(res) => {
                         println!("{}", res);
                         tx_parse_report.send(res).unwrap();
                     }
-                    Err(err) => match err {
-                        ParserError::EthernetPacketUnrecognized => {}
-                        _ => println!(
-                            "{0} {1}",
-                            "Error:".bold().yellow(),
-                            err.to_string().bold().yellow()
-                        ),
-                    },
+                    Err(err) => println!(
+                        "{0} {1}",
+                        "Error:".bold().yellow(),
+                        err.to_string().bold().yellow()
+                    ),
                 }
             }
             drop(pause);

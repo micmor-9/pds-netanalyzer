@@ -14,12 +14,10 @@ pub enum ParserError {
     GenericError,
 }
 
-impl std::error::Error for ParserError {}
-
 impl Display for ParserError {
     fn fmt(&self, f: &mut Formatter) -> Result {
         match self {
-            ParserError::EthernetPacketUnrecognized => write!(f, "Packet not recognized!"),
+            ParserError::EthernetPacketUnrecognized => write!(f, "Ethernet Packet not recognized!"),
             ParserError::EthernetPacketError => write!(f, "Ethernet Packet error!"),
             ParserError::ArpPacketError => write!(f, "ARP Packet error!"),
             ParserError::IPv4PacketError => write!(f, "IPv4 Packet error!"),

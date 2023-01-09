@@ -45,12 +45,12 @@ impl Settings {
 
     pub fn write_to_file(&self) -> Result<(), std::io::Error> {
         let serialized_settings = serde_json::to_string(self).unwrap();
-        std::fs::write("ConfigurationFile.txt", serialized_settings)
+        fs::write("ConfigurationFile.txt", serialized_settings)
     }
 
     pub fn read_from_file() -> Result<Settings, std::io::Error> {
         let input_path = Path::new("ConfigurationFile.txt");
-        let unserialized_settings = std::fs::read_to_string(input_path);
+        let unserialized_settings = fs::read_to_string(input_path);
         if unserialized_settings.is_ok() {
             Ok(serde_json::from_str::<Settings>(&unserialized_settings.unwrap()).unwrap())
         } else {
@@ -87,7 +87,11 @@ pub fn check_file(
                 .green()
                 .bold()
         );
-        println!("\t{}{}", "Interface: ".bold(), rs.interface.as_ref().unwrap());
+        println!(
+            "\t{}{}",
+            "Interface: ".bold(),
+            rs.interface.as_ref().unwrap()
+        );
         println!(
             "\t{}{}",
             "Output Type: ".bold(),
@@ -142,15 +146,15 @@ pub fn check_file(
         println!("Customized Configuration File created");
     }
     let set = Settings::read_from_file();
-    if set.is_ok() {
-        return set.unwrap();
+    return if set.is_ok() {
+        set.unwrap()
     } else {
-        return Settings::new();
+        Settings::new()
     }
 }
 
 pub fn create_conf_file() -> std::io::Result<()> {
-    let interfaces = Device::list().unwrap(); //da decommentare
+    let interfaces = Device::list().unwrap();
     let args = Args::parse();
     let mut interface = args.interface;
     let standard_interface = interfaces.first().unwrap().clone().name;

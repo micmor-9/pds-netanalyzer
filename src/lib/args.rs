@@ -29,5 +29,5 @@ pub struct Args {
     pub output_type: String,
 
     #[arg(short, long, action)]
-    pub wreset_filters: bool
+    pub wreset_filters: bool,
 }

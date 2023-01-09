@@ -341,7 +341,7 @@ pub fn print_menu(
     option: bool,
     interfaces: Vec<Device>,
     filters: bool,
-    reset_filters: bool
+    reset_filters: bool,
 ) {
     let args = Args::parse();
     let interface = args.interface;
@@ -352,17 +352,25 @@ pub fn print_menu(
         "txt" => false,
         _ => false,
     };
-
-    dbg!(reset_filters);
-
+    
     if reset_filters {
-        let mut cur_set = Settings::read_from_file().unwrap_or_else(|_|{
-            eprintln!("{}", "Cannot reset filters. Configuration file doesn't exist! Exiting...".bold().red());
+        let mut cur_set = Settings::read_from_file().unwrap_or_else(|_| {
+            eprintln!(
+                "{}",
+                "Cannot reset filters. Configuration file doesn't exist! Exiting..."
+                    .bold()
+                    .red()
+            );
             process::exit(1);
         });
         cur_set.filters = Some(Filter::new());
         cur_set.write_to_file().unwrap();
-        println!("{}", "Previous filters have been reset. Exiting...".bold().bright_green());
+        println!(
+            "{}",
+            "Previous filters have been reset. Exiting..."
+                .bold()
+                .bright_green()
+        );
         process::exit(0);
     }
 

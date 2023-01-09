@@ -86,7 +86,7 @@ impl ReportWriter {
                         .to_string()
                 )
                 .unwrap();
-                writeln!(file,"| Int.  | Source IP	            | Destination IP    	| Source Port	| Dest. Port	| Bytes | Transport Protocol	    | Application Protocol 	| Timestamp		|").unwrap();
+                writeln!(file,"| Interface | Source IP Address              | Destination IP Address         | Src Port | Dest. Port | Length | Transport Protocol             | Applic. Protocol  | Timestamp           |").unwrap();
             }
         }
     }
