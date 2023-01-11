@@ -60,7 +60,7 @@ fn main() {
         .open() // pass from inactive to active
         .unwrap_or_else(|_| {
             println!(
-                "{}",
+                "\t{}",
                 "Error opening network socket in promiscous mode. Exiting..."
                     .bold()
                     .red()
@@ -70,10 +70,10 @@ fn main() {
 
     println!(
         "{}",
-        "\nPress ENTER to start/pause the sniffing.".bold().cyan()
+        "\n\tPress ENTER to start/pause the sniffing.".bold().cyan()
     );
     println!(
-        "{}",
+        "\t{}",
         "Press q and ENTER (while sniffing is paused) to stop the sniffing\n"
             .bold()
             .blue()
@@ -155,7 +155,7 @@ fn main() {
                     let mut pause = lock.write().unwrap();
                     if *pause == true {
                         *pause = false;
-                        println!("{}", "Sniffing resumed!".bold().green());
+                        println!("{}", "Sniffing resumed!\n".bold().green());
                     } else {
                         *pause = true;
                         println!("{}", "Sniffing paused!".bold().green());
@@ -166,7 +166,7 @@ fn main() {
                 "q" | "Q" => {
                     let pause = lock.read().unwrap();
                     if *pause {
-                        println!("{}", "Sniffing stopped. Exiting...".bold().bright_red());
+                        println!("\n{}", "Sniffing stopped. Exiting...".bold().bright_red());
                         process::exit(0);
                     }
                     drop(pause);

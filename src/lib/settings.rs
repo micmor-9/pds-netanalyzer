@@ -138,12 +138,12 @@ pub fn check_file(
     {
         fs::remove_file("settings.conf").expect("File delete failed");
         create_conf_file().unwrap();
-        println!("Customized Configuration File updated");
+        println!("\n\t{}", "Customized Configuration File updated".bold());
     } else if !file_exists
         && (*interface_name != "" || *tipo != false || *timeout != 10 || *filename != "report")
     {
         create_conf_file().unwrap();
-        println!("Customized Configuration File created");
+        println!("\n\t{}", "Customized Configuration File created".bold());
     }
     let set = Settings::read_from_file();
     return if set.is_ok() {
