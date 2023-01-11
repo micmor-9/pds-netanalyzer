@@ -118,14 +118,13 @@ pub fn create_directory(filename: &str) -> String {
     folder = folder.to_string();
     folder = folder.replace(" ", "_").replace("-", "").replace(":", "_");
 
-
     if !Path::new(folder.as_str()).exists() {
         match create_dir(&folder) {
             Ok(()) => (),
             Err(why) => panic!("{}", why),
         }
         let mut perms = std::fs::metadata(&folder).unwrap().permissions();
-        perms.set_readonly(false);        
+        perms.set_readonly(false);
         match set_permissions(&folder, perms) {
             Err(why) => panic!("{}", why),
             Ok(_) => {}

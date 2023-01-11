@@ -352,7 +352,7 @@ pub fn print_menu(
         "txt" => false,
         _ => false,
     };
-    
+
     if reset_filters {
         let mut cur_set = Settings::read_from_file().unwrap_or_else(|_| {
             eprintln!(

@@ -68,10 +68,14 @@ pub fn check_file(
     let args = Args::parse();
     let tipologia = args.output_type;
     let mut file_exists = true;
-    let rs = Settings::read_from_file().unwrap_or_else(|_| {
+    let mut rs = Settings::read_from_file().unwrap_or_else(|_| {
         file_exists = false;
         Settings::new()
     });
+
+    if tipologia != "" {
+        rs.csv = Some(*tipo);
+    }
 
     if file_exists
         && *interface_name == ""
@@ -136,8 +140,23 @@ pub fn check_file(
             || *filename != "report"
             || tipologia == "txt")
     {
-        fs::remove_file("settings.conf").expect("File delete failed");
-        create_conf_file().unwrap();
+        if *tipo != rs.csv.unwrap() {
+            rs.csv = Some(*tipo);
+        }
+        if *filename != "report" && filename != rs.filename.as_ref().unwrap() {
+            rs.filename = Some(filename.clone());
+        }
+        if *timeout != 10 && *timeout != rs.timeout.unwrap() {
+            rs.timeout = Some(*timeout)
+        }
+        if *interface_name != "" && interface_name != rs.interface.as_ref().unwrap() {
+            rs.interface = Some(interface_name.clone());
+        }
+
+        rs.write_to_file().unwrap_or_else(|_| {
+            eprintln!("Error while writing filters on file...");
+            std::process::exit(1);
+        });
         println!("\n\t{}", "Customized Configuration File updated".bold());
     } else if !file_exists
         && (*interface_name != "" || *tipo != false || *timeout != 10 || *filename != "report")
@@ -150,7 +169,7 @@ pub fn check_file(
         set.unwrap()
     } else {
         Settings::new()
-    }
+    };
 }
 
 pub fn create_conf_file() -> std::io::Result<()> {
