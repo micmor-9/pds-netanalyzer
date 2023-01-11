@@ -158,7 +158,6 @@ pub fn create_conf_file() -> std::io::Result<()> {
     let args = Args::parse();
     let mut interface = args.interface;
     let standard_interface = interfaces.first().unwrap().clone().name;
-    // let standard_interface = String::from("en0");
     let time = args.timeout;
     let name = args.reportname;
     let r_type = match args.output_type.as_str() {
