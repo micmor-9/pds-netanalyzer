@@ -427,44 +427,50 @@ pub fn print_menu(
     if option {
         println!("\n{}", "MENU".green().bold());
         println!(
-            "{0: <2}  {1: <10}  {2: <10}",
-            "1.",
-            "Choose an interface to start sniffing:",
+            "{0: <2}  {1: <10} {2: <10} {3: <10}",
+            "1.".bold(),
+            "Choose an interface to",
+            "start sniffing:".green(),
             "\t-- -i <interface_name>".bold().green()
         );
         println!(
-            "{0: <2}  {1: <10}  {2: <10}",
-            "2.",
-            "List all interfaces",
+            "{0: <2}  {1: <8} {2: <0} {3: <10}",
+            "2.".bold(),
+            "List all",
+            "interfaces".green(),
             "\t\t\t-- -l".bold().green()
         );
         println!(
-            "{0: <2}  {1: <10}  {2: <10}",
-            "3.",
-            "Set sniffing filters",
+            "{0: <2}  {1: <10} {2: <5} {3: <10}",
+            "3.".bold(),
+            "Set sniffing",
+            "filters".green(),
             "\t\t\t-- -f ".bold().green()
         );
         println!(
-            "{0: <2}  {1: <10}  {2: <10}",
-            "4.",
-            "Set report file name",
+            "{0: <2}  {1: <10} {2: <5} {3: <10}",
+            "4.".bold(),
+            "Set report",
+            "file name".green(),
             "\t\t\t-- -r <filename>".bold().green()
         );
         println!(
-            "{0: <2}  {1: <10}  {2: <10}",
-            "5.",
-            "Set report file type",
+            "{0: <2}  {1: <10} {2: <5} {3: <10}",
+            "5.".bold(),
+            "Set report",
+            "file type".green(),
             "\t\t\t-- -o <csv/txt>".bold().green()
         );
         println!(
-            "{0: <2}  {1: <10}  {2: <10}",
-            "6.",
-            "Set timeout",
+            "{0: <2}  {1: <3} {2: <10} {3: <10}",
+            "6.".bold(),
+            "Set",
+            "timeout".green(),
             "\t\t\t\t-- -t <value (in s)>".bold().green()
         );
         println!(
-            "{0: <2}  {1: <10}  {2: <10}",
-            "7.",
+            "{0: <2}  {1: <4}  {2: <10}",
+            "7.".bold(),
             "Reset filters",
             "\t\t\t\t-- -w \n".bold().green()
         );
