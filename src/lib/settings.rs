@@ -45,11 +45,11 @@ impl Settings {
 
     pub fn write_to_file(&self) -> Result<(), std::io::Error> {
         let serialized_settings = serde_json::to_string(self).unwrap();
-        fs::write("ConfigurationFile.txt", serialized_settings)
+        fs::write("settings.conf", serialized_settings)
     }
 
     pub fn read_from_file() -> Result<Settings, std::io::Error> {
-        let input_path = Path::new("ConfigurationFile.txt");
+        let input_path = Path::new("settings.conf");
         let unserialized_settings = fs::read_to_string(input_path);
         if unserialized_settings.is_ok() {
             Ok(serde_json::from_str::<Settings>(&unserialized_settings.unwrap()).unwrap())
@@ -136,7 +136,7 @@ pub fn check_file(
             || *filename != "report"
             || tipologia == "txt")
     {
-        fs::remove_file("ConfigurationFile.txt").expect("File delete failed");
+        fs::remove_file("settings.conf").expect("File delete failed");
         create_conf_file().unwrap();
         println!("Customized Configuration File updated");
     } else if !file_exists

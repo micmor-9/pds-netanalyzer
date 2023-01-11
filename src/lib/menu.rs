@@ -388,7 +388,7 @@ pub fn print_menu(
         println!("\n");
         process::exit(0);
     }
-    if !list_mode && !option && !filters && !Path::new("./ConfigurationFile.txt").exists() {
+    if !list_mode && !option && !filters && !Path::new("./settings.conf").exists() {
         eprintln!("\n{}", "No configuration file found".bold().red());
         eprintln!(
             "{}",
