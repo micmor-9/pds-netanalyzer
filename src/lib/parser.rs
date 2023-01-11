@@ -56,7 +56,7 @@ impl Packet {
 impl Display for Packet {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         //| Interface \t| Source IP Address \t| Destination IP Address \t| Source Port \t| Dest. Port \t| Length \t| Transp. Protocol \t| Application Protocol \t| Timestamp \t|
-        write!(f, "| {0:9} | {1:<30} | {2:<30} | {3:<8} | {4:<10} | {5:<6} | {6:<30} | {7:<17} | {8} |", self.interface, self.src_address, self.dest_address, self.src_port.unwrap_or(0), self.dest_port.unwrap_or(0), self.length, self.transport, self.application, self.timestamp)
+        write!(f, "| {0:9} | {1:<37} | {2:<37} | {3:<8} | {4:<10} | {5:<6} | {6:<30} | {7:<17} | {8} |", self.interface, self.src_address, self.dest_address, self.src_port.unwrap_or(0), self.dest_port.unwrap_or(0), self.length, self.transport, self.application, self.timestamp)
     }
 }
 

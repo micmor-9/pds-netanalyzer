@@ -122,7 +122,7 @@ fn main() {
             let pause = lock.read().unwrap();
             if !*pause {
                 if header {
-                    println!("{}", "| Interface | Source IP Address              | Destination IP Address         | Src Port | Dest. Port | Length | Transport Protocol             | Applic. Protocol  | Timestamp           |".bold());
+                    println!("{}", "| Interface | Source IP Address                     | Destination IP Address                | Src Port | Dest. Port | Length | Transport Protocol             | Applic. Protocol  | Timestamp           |".bold());
                     header = false;
                 }
                 match parsed_packet {

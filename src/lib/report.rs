@@ -3,7 +3,6 @@ use csv::{Writer, WriterBuilder};
 use std::io::Write;
 
 use std::fs::{create_dir, set_permissions, File};
-use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 
 pub enum WriterType<'a> {
@@ -86,7 +85,7 @@ impl ReportWriter {
                         .to_string()
                 )
                 .unwrap();
-                writeln!(file,"| Interface | Source IP Address              | Destination IP Address         | Src Port | Dest. Port | Length | Transport Protocol             | Applic. Protocol  | Timestamp           |").unwrap();
+                writeln!(file,"| Interface | Source IP Address                     | Destination IP Address                | Src Port | Dest. Port | Length | Transport Protocol             | Applic. Protocol  | Timestamp           |").unwrap();
             }
         }
     }
@@ -119,12 +118,15 @@ pub fn create_directory(filename: &str) -> String {
     folder = folder.to_string();
     folder = folder.replace(" ", "_").replace("-", "").replace(":", "_");
 
+
     if !Path::new(folder.as_str()).exists() {
         match create_dir(&folder) {
             Ok(()) => (),
             Err(why) => panic!("{}", why),
         }
-        match set_permissions(&folder, PermissionsExt::from_mode(0o777)) {
+        let mut perms = std::fs::metadata(&folder).unwrap().permissions();
+        perms.set_readonly(false);        
+        match set_permissions(&folder, perms) {
             Err(why) => panic!("{}", why),
             Ok(_) => {}
         }

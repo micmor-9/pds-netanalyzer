@@ -1,0 +1,1 @@
+{"interface":"en0","csv":false,"timeout":10,"filename":"report","filters":{"ip_source":"","ip_destination":"","source_port":"","destination_port":"","transport_protocol":""}}
