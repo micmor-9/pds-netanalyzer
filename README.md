@@ -1,17 +1,4 @@
-<!-- <div class="heading">
-  <h1>net-analyzer</h1>
-</div>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Bungee+Shade&display=swap');
-  .heading{
-    font-size: 2rem;
-    text-transform: uppercase;
-    font-family: 'Bungee Shade', cursive;
-    color: #F46036
-  }
-</style> -->
-
-![](net-analyzer.png "prj_name")
+![](logo.png "prj_name")
 
 ## Project Overview
 **net-analyzer**, also known as a packet sniffer or protocol analyzer, is a tool or software that is used to capture, analyze, and inspect network traffic. It can be used to monitor network activity, troubleshoot network issues, and detect security threats. Network analyzers capture packets of data that are transmitted over a network and allow the user to view the packets in a detailed format, such as the source and destination IP addresses, ports, and protocol information. They can also be used to filter and search for specific types of packets, and to generate reports on network activity.
