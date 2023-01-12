@@ -18,6 +18,10 @@ On Windows, the installation process is similar, and you can use the rustup-init
 
 ## Usage
 > **NOTE**
-> The application needs to be run with admin priviledges in order to correctly use the specified interface to sniff traffic
-> 
+> The application needs to be run with admin priviledges in order to correctly use the specified interface to sniff traffic.
+
+The application can be run in several way and with several arguments\
+  `cargo run -- -c, -commands`   Show all possible commands
+
+
 
