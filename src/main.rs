@@ -155,7 +155,7 @@ fn main() {
                     let mut pause = lock.write().unwrap();
                     if *pause == true {
                         *pause = false;
-                        println!("{}", "Sniffing resumed!\n".bold().green());
+                        println!("{}", "Sniffing started!\n".bold().green());
                     } else {
                         *pause = true;
                         println!("{}", "Sniffing paused!".bold().green());
