@@ -93,9 +93,9 @@ to write with the report filename to differ every report generated in that sessi
 
 In the main module, threads are handled.\
 First of all pcap capture is set to promisc mode to the selected interface and a result is returned to check if there's an error.\
-There are channels to let threads communicate with each other, in particular the sniffer thread communicates with the parser thread and the parser thread communicates with the report\ thread.\
+There are channels to let threads communicate with each other, in particular the sniffer thread communicates with the parser thread and the parser thread communicates with the **report\thread**.\
 There is a boolean state managed with RwLock that handles the pause/resume events during the sniffing process and is shared among all the threads.\
-The thread responsible for the effective sniffing via network will start, receive the packet in a Vec<u8> format, send all the bits to the parser, that will try to process these information and send them to the report thread.\
+The thread responsible for the effective sniffing via network will start, receive the packet in a `Vec<u8>` format, send all the bits to the parser, that will try to process these information and send them to the report thread.\
 This one after the timeout time, thanks to a boolean flag handled by a scheduled task, will create and write the report.
 
 The error module gives information about all the errors to handle. The errors with a short description are displayed to the user during the sniffing process.
